@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0c0710">
 <title>CF HUB</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,7 @@
     --display:'Unbounded',system-ui,sans-serif; --body:'Manrope',system-ui,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{min-height:100%}
+  html,body{min-height:100%;touch-action:manipulation;overscroll-behavior:none}
   body{
     font-family:var(--body);background:var(--bg);color:var(--text);
     display:flex;flex-direction:column;align-items:center;
@@ -159,6 +159,21 @@
   .mcard{padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(0,0,0,.25);margin-bottom:12px}
   /* бейджи */
   .badges{display:inline-flex;align-items:center;gap:5px;height:20px}
+  .badges.nb{margin-left:7px;vertical-align:middle}
+  .tcount{display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;margin:0 0 14px;border-radius:14px;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08);cursor:pointer}
+  .tcount.show{display:flex}
+  .tcount .tc-t{font-size:.78rem;font-weight:800;line-height:1.3}
+  .tcount .tc-s{font-size:.7rem;color:var(--muted);font-weight:600;margin-top:2px}
+  .tcount .tc-time{font-family:var(--display);font-weight:700;font-size:1rem;color:#f59e0b;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .q-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);margin-bottom:6px}
+  .q-row img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#120a16}
+  .q-row b{font-size:.88rem;word-break:break-word}
+  .task{display:flex;align-items:center;gap:12px;padding:11px 12px;margin-bottom:7px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);cursor:pointer;font-size:.86rem;font-weight:600;line-height:1.4}
+  .task i{flex:0 0 22px;height:22px;border-radius:7px;border:2px solid var(--muted);display:grid;place-items:center;font-style:normal;font-size:.8rem;color:transparent}
+  .task.done{color:var(--muted);text-decoration:line-through}
+  .task.done i{background:var(--ok);border-color:var(--ok);color:#0c0710}
+  .tbar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin:8px 0 4px}
+  .tbar>div{height:100%;background:var(--ok);border-radius:6px;transition:width .3s}
   .badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;cursor:pointer;flex:0 0 20px;box-sizing:border-box;border:0;line-height:0;padding:0;margin:0}
   .badge svg{width:11px;height:11px;display:block}
   .badge.team{background:#3dffa8;box-shadow:0 0 10px rgba(61,255,168,.4)} .badge.team svg{fill:#0c0710}
@@ -199,9 +214,41 @@
   #toast.ok{border-color:rgba(61,255,168,.5)} #toast.err{border-color:rgba(255,84,112,.55)}
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* Компактная карточка тестирования над основной панелью */
+  .tester-card{padding:13px 15px;margin:0 0 12px;border-radius:16px}
+  .tester-top{margin-bottom:7px}
+  .tester-mark{width:23px;height:23px;font-size:14px}
+  .tester-card h2{font-size:1rem;margin-bottom:4px}
+  .tester-card p{font-size:.78rem;line-height:1.4;margin-bottom:9px}
+  .tester-join{padding:11px 13px;font-size:.84rem;border-radius:12px}
+  .tester-note{font-size:.7rem;line-height:1.4;margin-top:7px}
+  .tester-card:after{width:76px;height:76px;right:-30px;top:14px}
+  .tester-card.compact-joined{padding:10px 14px}
+  .tester-card.compact-joined p{display:none}
+  .tester-card.compact-joined .tester-note{margin-top:5px}
+  .badge-list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin-bottom:7px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+  .badge-list-row .who{min-width:0;overflow-wrap:anywhere}
+  .badge-list-row .who small{display:block;color:var(--muted);font-size:.72rem;margin-top:3px}
+  .badge-list-row .badges{flex-shrink:0}
 </style>
 </head>
 <body>
+
+<!-- LANGUAGE PICKER -->
+<div id="lang-pick" style="display:none;position:fixed;inset:0;z-index:100;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
+  <div class="brand" style="margin-bottom:28px">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M13.5 0.7s.9 3.4-1.2 6.2C10.7 9 8 10.4 8 14.1c0 2 1 3.6 2.4 4.4-.5-1.6-.1-3.4 1.2-4.7 1.2 1.3 3.4 2.5 3.4 5 0 .4 0 .8-.2 1.2 2.4-1 4.2-3.3 4.2-6.2 0-2.6-1.2-4.7-2.7-6.4-.6 1-1.3 1.6-2 2 .5-3.3-.6-6.7-.8-8.4zM12 24c-3.9 0-7-2.7-7-6.5 0-1.9.8-3.6 2-4.9.1 1.4.8 2.6 1.9 3.3C8.7 18.9 10 21.5 12 24z"/></svg></div>
+    <span>CF <em>HUB</em></span>
+  </div>
+  <h1 class="title" style="margin-bottom:8px">Language / Язык</h1>
+  <p class="sub" style="margin-bottom:22px">Choose your language</p>
+  <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px">
+    <button onclick="setLang('ru')" style="padding:16px">Русский</button>
+    <button class="ghost" onclick="setLang('en')" style="margin:0;padding:16px;color:#fff;border-color:var(--line)">English</button>
+  </div>
+</div>
+
 <div class="shell">
 
   <header class="top">
@@ -214,6 +261,7 @@
       <span id="account-btn-text">Войти</span>
     </button>
   </header>
+
 
   <main class="card">
 
@@ -237,6 +285,11 @@
           <div><div class="t">Модерация</div><div class="d">Проверка матчей и эло</div></div>
           <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
+        <div class="item" id="item-testers" style="display:none" tabindex="0" onclick="switchScreen('screen-testers')">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2l2.1 6.4L21 9l-5.2 4.1L17.5 20 12 16.2 6.5 20l1.7-6.9L3 9l6.9-.6L12 2z"/></svg></div>
+          <div><div class="t">Меню тестеров</div><div class="d">Новости и информация для тестировщиков</div></div>
+          <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
         <div class="item" tabindex="0" onclick="switchScreen('screen-lobbies')">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v2H6v-2H4v-2h2V9h2v2h3v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
           <div><div class="t">Поиск игры</div><div class="d">5v5 · 2v2 · 1v1</div></div>
@@ -258,7 +311,7 @@
           <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
       </div>
-      <div class="hub-foot">Сыграно матчей: <b id="hs-m">0</b></div>
+      <div class="hub-foot"><span id="hs-m-label">Сыграно матчей:</span> <b id="hs-m">0</b></div>
     </section>
 
     <!-- ПОИСК ИГРЫ -->
@@ -324,10 +377,52 @@
     <section id="screen-match" class="screen">
       <h1 class="title" id="m-title">Матч</h1>
       <p class="sub" id="m-status"></p>
+      <div id="m-timer" style="display:none;text-align:center;font-family:var(--display);font-weight:700;font-size:1.6rem;letter-spacing:.06em;margin:4px 0 12px;background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent">00:00</div>
       <div id="m-players"></div>
       <p class="hint" id="m-hint"></p>
-      <button id="btn-start" style="display:none" onclick="startMatch()">Лобби создано, начать игру</button>
+
+      <!-- код лобби -->
+      <div id="m-lobby-code" style="display:none;margin:14px 0">
+        <div class="team" style="margin-bottom:8px">Код доступа к лобби</div>
+        <div id="m-code-display" class="code" style="display:none;margin-bottom:12px">—</div>
+        <div id="m-code-host" style="display:none">
+          <input id="inp-lobby-code" type="text" maxlength="32" placeholder="Введи код из игры" style="text-transform:uppercase;margin-bottom:10px">
+          <button id="btn-publish-code" onclick="publishLobbyCode()" style="margin-bottom:10px">Отправить код всем</button>
+        </div>
+        <div id="m-host-tips" style="display:none;text-align:left;padding:12px 14px;border-radius:14px;background:rgba(255,138,61,.08);border:1px solid rgba(255,138,61,.25);margin-bottom:12px;font-size:.82rem;line-height:1.55;color:var(--muted)">
+          <b style="color:var(--orange);display:block;margin-bottom:6px">Настройки лобби в игре:</b>
+          • Раунды: <b style="color:var(--text)" id="m-rounds">16</b><br>
+          • Включи галочку <b style="color:var(--text)">«Не начинать матч, пока не соберётся состав»</b>
+        </div>
+        <div id="m-team-warn" style="display:none;text-align:left;padding:12px 14px;border-radius:14px;background:rgba(255,84,112,.08);border:1px solid rgba(255,84,112,.3);margin-top:10px;font-size:.82rem;line-height:1.5;color:var(--muted)">
+          <b style="color:var(--err)">Важно:</b> заходи <b style="color:var(--text)">строго в свою команду</b> (A или B), как указано выше. Чужой слот = предупреждение, при повторе — блокировка.
+        </div>
+      </div>
+
+      <button id="btn-start" style="display:none" onclick="startMatch()">Начать игру</button>
       <label class="upl" id="m-upload" style="display:none">Загрузить скрин итогов<input type="file" accept="image/*" onchange="uploadShot(this.files[0])"></label>
+
+      <!-- жалоба -->
+      <div id="m-report" style="display:none;margin-top:16px">
+        <button class="ghost" id="btn-report-open" onclick="toggleReportBox()" style="margin:0;display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--err)"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          Пожаловаться на игрока
+        </button>
+        <div id="report-box" style="display:none;margin-top:12px;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(0,0,0,.28)">
+          <div class="t" style="font-weight:800;margin-bottom:10px">Жалоба</div>
+          <select id="report-target" style="width:100%;padding:12px;border-radius:12px;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);font-family:var(--body);font-weight:700;margin-bottom:10px"></select>
+          <select id="report-reason" style="width:100%;padding:12px;border-radius:12px;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);font-family:var(--body);font-weight:700;margin-bottom:10px">
+            <option value="wrong_team">Зашёл не в свою команду</option>
+            <option value="afk">АФК / не играет</option>
+            <option value="toxic">Токсичность / оскорбления</option>
+            <option value="cheat">Подозрение в читах</option>
+            <option value="throw">Сливает игру</option>
+            <option value="other">Другое</option>
+          </select>
+          <input id="report-note" type="text" maxlength="200" placeholder="Комментарий (необязательно)" style="text-align:left;margin-bottom:10px">
+          <button onclick="submitReport()">Отправить жалобу</button>
+        </div>
+      </div>
 
       <button class="ghost" onclick="switchScreen('screen-home')">На главную</button>
     </section>
@@ -337,6 +432,11 @@
       <h1 class="title">Модерация</h1>
       <p class="sub" id="a-sub">Матчи со скринами на проверке.</p>
       <div id="a-list"></div>
+      <div class="team">Пользователи и бейджи</div>
+      <button class="ghost" style="margin:0 0 10px" onclick="loadAdminUsers()">Обновить список пользователей</button>
+      <div id="a-users"><p class="hint">Нажми «Обновить список пользователей».</p></div>
+      <div class="team">Жалобы</div>
+      <div id="a-reports"></div>
       <div class="team">Инструменты</div>
       <button class="ghost" onclick="clearQueue()">Очистить очередь поиска</button>
       <div class="team">Активные матчи</div>
@@ -347,6 +447,18 @@
         <input id="inp-mod-id" type="number" inputmode="numeric" placeholder="ID нового модератора" style="margin-top:8px">
         <button onclick="addMod()">Добавить модератора</button>
       </div>
+      <button class="ghost" onclick="switchScreen('screen-home')">Назад</button>
+    </section>
+
+    <!-- МЕНЮ ТЕСТЕРОВ -->
+    <section id="screen-testers" class="screen">
+      <h1 class="title">Меню тестеров</h1>
+      <p class="sub">Закрытый раздел для участников тестирования CF HUB.</p>
+      <div class="mcard">
+        <div class="t">Добро пожаловать в команду тестировщиков!</div>
+        <p class="hint">Здесь будут появляться новости тестирования, ранние функции и задания для проверки.</p>
+      </div>
+      <div id="tester-roster"></div>
       <button class="ghost" onclick="switchScreen('screen-home')">Назад</button>
     </section>
 
@@ -376,6 +488,7 @@
           <span class="tag ok" id="linked-badge" style="display:none">Твой профиль</span>
           <span class="tag ok" id="role-badge" style="display:none"></span>
           <span class="tag" id="league-badge" style="display:none"></span>
+          <span class="tag" id="warn-badge" style="display:none;color:var(--err);border-color:rgba(255,84,112,.4)"></span>
         </div>
       </div>
       <div class="stats">
@@ -457,7 +570,8 @@
       if (curMatch) return openMatch();
       loadMe();
     }
-    if (id === 'screen-admin') loadAdmin();
+    if (id === 'screen-admin') { loadAdmin(); loadAdminUsers(); }
+    if (id === 'screen-testers') loadTesterMenu();
     if (id === 'screen-board') loadBoard();
     document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -478,6 +592,7 @@
   let myRole = 'player', inQueue = false, curMatch = null, qMode = localStorage.getItem('cf_mode') || '5v5';
   const qNeed = () => qMode === '1v1' ? 2 : qMode === '2v2' ? 4 : 10;
   const isStaff = () => myRole === 'admin' || myRole === 'mod';
+  const teamLabel = (team) => team === 'A' || team === 'T' ? 'T' : team === 'B' || team === 'CT' ? 'CT' : String(team || '');
 
   // Telegram WebApp
   const tg = window.Telegram?.WebApp;
@@ -515,6 +630,16 @@
     if (ADMIN_IDS.includes(me())) myRole = 'admin';
     document.getElementById('bot-tools').style.display = isStaff() ? 'block' : 'none';
     document.getElementById('item-admin').style.display = isStaff() ? 'flex' : 'none';
+    const testerMenu = document.getElementById('item-testers');
+    if (testerMenu) {
+      testerMenu.style.display = 'none';
+      if (hasDb() && me()) {
+        try {
+          const pr = await db('players?cf_id=eq.' + encodeURIComponent(me()) + '&select=badges');
+          testerMenu.style.display = (pr[0] && Array.isArray(pr[0].badges) && pr[0].badges.includes('tester')) ? 'flex' : 'none';
+        } catch (_) {}
+      }
+    }
     document.getElementById('item-match').style.display = curMatch ? 'flex' : 'none';
   }
 
@@ -522,9 +647,9 @@
   function renderQueue(n) {
     document.getElementById('q-count').textContent = (n === undefined ? 0 : n) + ' / ' + qNeed();
     document.getElementById('q-state').textContent = inQueue
-      ? (qMode === '1v1' ? 'Ищем соперника…' : qMode === '2v2' ? 'Ищем команду 2×2…' : 'Ищем игроков…')
-      : 'Ты не в очереди';
-    document.getElementById('btn-queue').textContent = inQueue ? 'Выйти из очереди' : 'Найти игру';
+      ? (qMode === '1v1' ? t('queue_1v1') : qMode === '2v2' ? t('queue_2v2') : t('queue_searching'))
+      : t('queue_idle');
+    document.getElementById('btn-queue').textContent = inQueue ? t('queue_leave') : t('queue_find');
     document.getElementById('q-sub').textContent = qMode === '1v1'
       ? 'Найдём соперника, разделим вас по командам и случайно выберем хоста.'
       : qMode === '2v2'
@@ -595,7 +720,7 @@
         if (fresh && !onMatch) { openMatch(); toast('Матч найден!', 'ok'); } else if (onMatch) renderMatch();
       } else {
         if (curMatch) {
-          const id = curMatch.id; curMatch = null;
+          const id = curMatch.id; curMatch = null; if (typeof stopMatchTimer==='function') stopMatchTimer();
           const r = await db('matches?id=eq.' + id + '&select=status,winner,deltas');
           if (r[0] && r[0].status === 'done') toast('Матч засчитан. Твоё эло: ' + (v => (v > 0 ? '+' : '') + v)(Number((r[0].deltas || {})[me()] || 0)), 'ok');
           else if (r[0] && r[0].status === 'cancelled') toast('Матч отменён модератором', 'err');
@@ -620,31 +745,191 @@
     const m = curMatch; if (!m) return;
     const host = m.host_id === me();
     document.getElementById('m-title').textContent = (m.mode === '1v1' ? 'Дуэль #' : m.mode === '2v2' ? '2×2 #' : 'Матч #') + m.id;
-    document.getElementById('m-status').textContent = { lobby: 'Хост собирает лобби', playing: 'Идёт игра', review: 'Скрин на проверке' }[m.status];
+    document.getElementById('m-status').textContent = { lobby: t('status_lobby'), playing: t('status_playing'), review: t('status_review') }[m.status];
     const wrap = document.getElementById('m-players'); wrap.innerHTML = '';
-    ['A', 'B'].forEach(t => {
-      wrap.insertAdjacentHTML('beforeend', `<div class="team">Команда ${t}</div>`);
-      m.players.filter(p => p.team === t).forEach(p => {
+    ['A', 'B'].forEach(side => {
+      wrap.insertAdjacentHTML('beforeend', `<div class="team">${t('team')} ${teamLabel(side)}</div>`);
+      m.players.filter(p => p.team === side || p.team === teamLabel(side)).forEach(p => {
         const d = document.createElement('div'); d.className = 'pl';
         d.innerHTML = '<img alt=""><div><b></b><small></small></div>';
         d.querySelector('img').src = p.avatar || 'https://counterflame.com/favicon.ico';
         d.querySelector('b').textContent = p.nick; d.querySelector('small').textContent = 'ID ' + p.id;
-        if (p.id === m.host_id) d.insertAdjacentHTML('beforeend', '<span class="crown">Хост</span>');
+        if (p.id === m.host_id) d.insertAdjacentHTML('beforeend', `<span class="crown">${t('host')}</span>`);
         wrap.appendChild(d);
       });
     });
-    const hint = { lobby: host ? 'Ты хост. Создай лобби в игре, пригласи всех по ID из списка и нажми кнопку ниже.' : 'Хост создаёт лобби и пригласит тебя по ID. Жди приглашения в игре.',
-      playing: host ? 'После игры загрузи скрин с итогами.' : 'Играй. Хост загрузит скрин итогов.', review: 'Модератор проверит скрин и начислит эло.' }[m.status];
+    const hasCode = !!(m.lobby_code && String(m.lobby_code).trim());
+    const rounds = (m.mode === '1v1' || m.mode === '2v2') ? 8 : 16;
+    const hint = {
+      lobby: host ? (hasCode ? t('hint_host_ready') : t('hint_host_wait')) : (hasCode ? t('hint_player_code') : t('hint_player_wait')),
+      playing: host ? t('hint_playing_host') : t('hint_playing_player'),
+      review: t('hint_review')
+    }[m.status];
     document.getElementById('m-hint').textContent = hint;
-    document.getElementById('btn-start').style.display = host && m.status === 'lobby' ? 'block' : 'none';
+
+    const codeBox = document.getElementById('m-lobby-code');
+    const codeDisp = document.getElementById('m-code-display');
+    const codeHost = document.getElementById('m-code-host');
+    const hostTips = document.getElementById('m-host-tips');
+    const teamWarn = document.getElementById('m-team-warn');
+    const roundsEl = document.getElementById('m-rounds');
+    if (roundsEl) roundsEl.textContent = String(rounds);
+
+    // код виден в lobby и playing (если уже есть)
+    if (m.status === 'lobby' || (hasCode && (m.status === 'playing' || m.status === 'review'))) {
+      codeBox.style.display = 'block';
+      hostTips.style.display = host && m.status === 'lobby' ? 'block' : 'none';
+      teamWarn.style.display = hasCode ? 'block' : 'none';
+      if (hasCode) {
+        codeDisp.style.display = 'flex';
+        codeDisp.textContent = String(m.lobby_code).toUpperCase();
+        codeHost.style.display = host && m.status === 'lobby' ? 'block' : 'none';
+        if (host && m.status === 'lobby') {
+          document.getElementById('inp-lobby-code').value = m.lobby_code;
+          document.getElementById('btn-publish-code').textContent = t('update_code');
+        }
+      } else {
+        codeDisp.style.display = 'none';
+        codeHost.style.display = host ? 'block' : 'none';
+        if (host) document.getElementById('btn-publish-code').textContent = t('send_code');
+      }
+    } else {
+      codeBox.style.display = 'none';
+    }
+
+    document.getElementById('btn-start').style.display = host && m.status === 'lobby' && hasCode ? 'block' : 'none';
     document.getElementById('m-upload').style.display = host && m.status === 'playing' ? 'block' : 'none';
 
+    // таймер матча
+    const timerEl = document.getElementById('m-timer');
+    if (m.status === 'playing') {
+      startMatchTimer(m.started_at || null);
+    } else {
+      stopMatchTimer();
+      if (timerEl) timerEl.style.display = 'none';
+    }
+
+    // жалобы — в lobby/playing
+    const rep = document.getElementById('m-report');
+    if (m.status === 'lobby' || m.status === 'playing') {
+      rep.style.display = 'block';
+      fillReportTargets(m);
+    } else {
+      rep.style.display = 'none';
+      document.getElementById('report-box').style.display = 'none';
+    }
   }
 
+  function fillReportTargets(m) {
+    const sel = document.getElementById('report-target');
+    const my = me();
+    sel.innerHTML = (m.players || []).filter(p => String(p.id) !== String(my) && !String(p.id).startsWith('bot-'))
+      .map(p => `<option value="${esc(p.id)}">${esc(p.nick)} (${teamLabel(p.team)}, ID ${esc(p.id)})</option>`).join('')
+      || '<option value="">Нет игроков для жалобы</option>';
+  }
+  function toggleReportBox() {
+    const box = document.getElementById('report-box');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  }
+  async function submitReport() {
+    if (!curMatch || !me()) return;
+    const target = document.getElementById('report-target').value;
+    const reason = document.getElementById('report-reason').value;
+    const note = (document.getElementById('report-note').value || '').trim().slice(0, 200);
+    if (!target) return toast('Выбери игрока', 'err');
+    try {
+      await db('reports', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          match_id: curMatch.id,
+          reporter_id: String(me()),
+          target_id: String(target),
+          reason,
+          note: note || null
+        })
+      });
+      document.getElementById('report-note').value = '';
+      document.getElementById('report-box').style.display = 'none';
+      toast('Жалоба отправлена', 'ok');
+    } catch (e) {
+      toast('Не удалось отправить: ' + e.message, 'err');
+    }
+  }
+
+  async function publishLobbyCode() {
+    if (!curMatch || curMatch.host_id !== me()) return;
+    const code = (document.getElementById('inp-lobby-code').value || '').trim().toUpperCase();
+    if (!code || code.length < 2) return toast('Введи код лобби из игры', 'err');
+    try {
+      await db(`matches?id=eq.${curMatch.id}&host_id=eq.${me()}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ lobby_code: code })
+      });
+      curMatch.lobby_code = code;
+      renderMatch();
+      toast('Код отправлен всем игрокам', 'ok');
+    } catch (e) {
+      toast('Не удалось сохранить код: ' + e.message, 'err');
+    }
+  }
 
   async function startMatch() {
-    try { await db(`matches?id=eq.${curMatch.id}&host_id=eq.${me()}`, { method: 'PATCH', body: JSON.stringify({ status: 'playing' }) }); curMatch.status = 'playing'; renderMatch(); }
-    catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+    if (!curMatch || curMatch.host_id !== me()) return;
+    if (!curMatch.lobby_code) return toast('Сначала отправь код лобби', 'err');
+    try {
+      const started_at = new Date().toISOString();
+      try {
+        await db(`matches?id=eq.${curMatch.id}&host_id=eq.${me()}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'playing', started_at })
+        });
+      } catch (_) {
+        await db(`matches?id=eq.${curMatch.id}&host_id=eq.${me()}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'playing' })
+        });
+      }
+      curMatch.status = 'playing';
+      curMatch.started_at = started_at;
+      try { localStorage.setItem('cf_match_start_' + curMatch.id, started_at); } catch (_) {}
+      renderMatch();
+      toast('Игра началась', 'ok');
+    } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+
+  let matchTimerId = null;
+  function formatMatchTime(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    const pad = n => String(n).padStart(2, '0');
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  }
+  function stopMatchTimer() {
+    if (matchTimerId) { clearInterval(matchTimerId); matchTimerId = null; }
+  }
+  function startMatchTimer(fromIso) {
+    stopMatchTimer();
+    const el = document.getElementById('m-timer');
+    if (!el) return;
+    let iso = fromIso;
+    if (!iso && curMatch) {
+      try { iso = localStorage.getItem('cf_match_start_' + curMatch.id); } catch (_) {}
+    }
+    if (!iso && curMatch) {
+      iso = new Date().toISOString();
+      try { localStorage.setItem('cf_match_start_' + curMatch.id, iso); } catch (_) {}
+    }
+    const start = iso ? new Date(iso).getTime() : Date.now();
+    const tick = () => {
+      if (!curMatch || curMatch.status !== 'playing') { stopMatchTimer(); el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      el.textContent = formatMatchTime((Date.now() - start) / 1000);
+    };
+    tick();
+    matchTimerId = setInterval(tick, 1000);
   }
   function compress(file) {
     return new Promise((res, rej) => {
@@ -670,10 +955,10 @@
     const box = document.getElementById('board-list');
     if (!hasDb()) return box.innerHTML = '<p class="hint">Подключи Supabase, чтобы увидеть рейтинг.</p>';
     try {
-      const r = await db('players?select=cf_id,nick,avatar,elo&nick=not.is.null&order=elo.desc&limit=20');
+      const r = (await db('players?select=cf_id,nick,avatar,elo,badges,verified&nick=not.is.null&cf_id=not.like.bot-*&order=elo.desc&limit=20')).filter(x => !String(x.cf_id).startsWith('bot-'));
       box.innerHTML = r.length ? r.map((x, i) => { const l = league(x.elo);
         return `<div class="pl" style="cursor:pointer" onclick="lookupPlayer('${esc(x.cf_id)}')"><b style="width:22px;color:var(--muted)">${i + 1}</b>
-          <img alt="" src="${esc(x.avatar || 'https://counterflame.com/favicon.ico')}"><div><b>${esc(x.nick)}</b><small style="color:${l[1]}">${l[0]}</small></div>
+          <img alt="" src="${esc(x.avatar || 'https://counterflame.com/favicon.ico')}"><div><b>${esc(x.nick)}${nickBadges(x)}</b><small style="color:${l[1]}">${l[0]}</small></div>
           <b style="margin-left:auto;font-family:var(--display)">${x.elo}</b></div>`; }).join('') : '<p class="hint">Пока никого нет. Привяжи аккаунт, и ты появишься здесь.</p>';
     } catch (e) { box.innerHTML = '<p class="hint">Не удалось загрузить рейтинг.</p>'; }
   }
@@ -712,15 +997,32 @@
         box.innerHTML = list.map(m => {
           adminMatches[m.id] = m;
           const img = (m.screenshot || '').startsWith('data:image/') ? `<img src="${esc(m.screenshot)}" alt="Скрин матча">` : '<p class="hint">Скрина нет</p>';
-          const rows = m.players.map((p, i) => `<div class="pl"><div><b>${esc(p.nick)}</b><small>Команда ${p.team} · ID ${esc(p.id)}</small></div>
+          const rows = m.players.map((p, i) => `<div class="pl"><div><b>${esc(p.nick)}</b><small>${typeof t==='function'?t('team'):'Команда'} ${teamLabel(p.team)} · ID ${esc(p.id)}</small></div>
             <input type="number" inputmode="numeric" id="d-${m.id}-${i}" value="0" style="width:84px;margin:0 0 0 auto;padding:10px"></div>`).join('');
           return `<div class="mcard"><div class="t">${m.mode === '1v1' ? 'Дуэль' : m.mode === '2v2' ? '2×2' : 'Матч'} #${m.id}</div>${img}
-            <div class="btns" style="margin-bottom:10px"><button class="ghost" style="margin:0" onclick="presetElo(${m.id},'A')">Победила A: +25 / −25</button>
-            <button class="ghost" style="margin:0" onclick="presetElo(${m.id},'B')">Победила B: +25 / −25</button></div>${rows}
+            <div class="btns" style="margin-bottom:10px"><button class="ghost" style="margin:0" onclick="presetElo(${m.id},'A')">T +25 / CT −25</button>
+            <button class="ghost" style="margin:0" onclick="presetElo(${m.id},'B')">CT +25 / T −25</button></div>${rows}
             <div class="btns" style="margin-top:10px"><button onclick="applyElo(${m.id})">Начислить эло</button>
             <button class="ghost" style="margin:0" onclick="decide(${m.id},'back')">Вернуть хосту</button></div></div>`;
         }).join('');
       }
+      
+      try {
+        const reps = await db('reports?order=created_at.desc&limit=30');
+        const rb = document.getElementById('a-reports');
+        if (rb) {
+          const reasonMap = { wrong_team: t('report_wrong_team'), afk: t('report_afk'), toxic: t('report_toxic'), cheat: t('report_cheat'), throw: t('report_throw'), other: t('report_other') };
+          rb.innerHTML = (reps && reps.length) ? reps.map(r =>
+            `<div class="pl" style="flex-wrap:wrap"><div><b>${esc(r.target_id)}</b><small>от ${esc(r.reporter_id)} · матч #${esc(r.match_id)} · ${reasonMap[r.reason] || r.reason}${r.note ? ' — ' + esc(r.note) : ''}</small></div>
+            <button class="rc" style="margin-left:auto" onclick="lookupPlayer('${esc(r.target_id)}')">Профиль</button>
+            <button class="rc danger" onclick="adminWarnFromReport('${esc(r.target_id)}')">+ Варн</button></div>`
+          ).join('') : '<p class="hint">Жалоб пока нет.</p>';
+        }
+      } catch (e) {
+        const rb = document.getElementById('a-reports');
+        if (rb) rb.innerHTML = '<p class="hint">Таблица reports не создана или ошибка загрузки.</p>';
+      }
+
       const act = await db('matches?status=in.(lobby,playing)&order=id.asc&select=id,status,host_id');
       document.getElementById('a-active').innerHTML = act.map(m => `<div class="pl"><b>Матч #${m.id}</b><small>${m.status === 'lobby' ? 'лобби' : 'идёт игра'}, хост ${esc(m.host_id)}</small>
         <button class="rc danger" style="margin-left:auto" onclick="cancelMatch(${m.id})">Отменить</button></div>`).join('') || '<p class="hint">Активных матчей нет.</p>';
@@ -831,7 +1133,7 @@
 
   function updateAccountButtonText() {
     document.getElementById('account-btn-text').textContent =
-      localStorage.getItem('cf_linked_user') ? 'Профиль' : 'Войти';
+      localStorage.getItem('cf_linked_user') ? t('profile') : t('login');
   }
 
   function generateVerifyCode() {
@@ -854,7 +1156,8 @@
       if (nickname.includes(generatedCode)) {
         localStorage.setItem('cf_linked_user', tempLinkingId);
         updateAccountButtonText();
-        toast('Профиль привязан', 'ok');
+        toast('Профиль успешно привязан!', 'ok');
+        try { await window.grantTesterBadge(); } catch (_) {}
         lookupPlayer(tempLinkingId);
       } else {
         toast(`Кода ${generatedCode} нет в нике «${nickname}». Измени ник в игре и проверь снова.`, 'err');
@@ -906,11 +1209,12 @@
       document.getElementById('p-hist').innerHTML = '';
       document.getElementById('p-admin').style.display = 'none';
       document.getElementById('p-badges').innerHTML = '';
-      profileMeta = { id, role: 'player', elo: 1000, banned: false, badges: [] };
+      profileMeta = { id, role: 'player', elo: 1000, banned: false, badges: [], warns: 0 };
+      document.getElementById('warn-badge').style.display = 'none';
 
       if (hasDb()) {
         if (mine) upsert('players', { cf_id: id, nick: data.nickname, avatar: avatarUrl(data) }).catch(() => {});
-        db('players?cf_id=eq.' + id + '&select=elo,role,badges,verified').then(r => {
+        db('players?cf_id=eq.' + id + '&select=elo,role,badges,verified,warns').then(r => {
           if (!r[0]) {
             if (isStaff()) upsert('players', { cf_id: id, nick: data.nickname, avatar: avatarUrl(data), elo: 1000, role: 'player' }).catch(() => {});
             if (isStaff()) updateAdminPanel();
@@ -929,7 +1233,11 @@
           // поддержка старого verified + новый badges
           let badges = Array.isArray(r[0].badges) ? r[0].badges.slice() : [];
           if (r[0].verified && !badges.includes('team')) badges.push('team');
-          profileMeta = { id, role, elo, banned: role === 'banned', badges };
+          const warns = Number(r[0].warns) || 0;
+          const wb = document.getElementById('warn-badge');
+          if (warns > 0) { wb.style.display = 'inline-block'; wb.textContent = 'Варны: ' + warns; }
+          else { wb.style.display = 'none'; }
+          profileMeta = { id, role, elo, banned: role === 'banned', badges, warns };
           renderBadges(badges);
           updateAdminPanel();
         }).catch(() => { if (isStaff()) updateAdminPanel(); });
@@ -944,7 +1252,7 @@
     }
   }
 
-  let profileMeta = { id: null, role: 'player', elo: 1000, banned: false, badges: [] };
+  let profileMeta = { id: null, role: 'player', elo: 1000, banned: false, badges: [], warns: 0 };
 
   const BADGE_DEFS = {
     team:      { label: 'Команда CFHub', color: '#3dffa8', bg: '#3dffa8', icon: '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>' },
@@ -961,6 +1269,29 @@
       const d = BADGE_DEFS[k];
       return `<span class="badge ${k}" data-badge="${k}" onclick="showBadgeTip(event,'${k}')"><svg viewBox="0 0 24 24">${d.icon}</svg></span>`;
     }).join('');
+  }
+
+  // ---- бейджи везде: общий кэш и разметка ----
+  const badgeCache = {};
+  function normBadges(r) {
+    const b = Array.isArray(r && r.badges) ? r.badges.slice() : [];
+    if (r && r.verified && !b.includes('team')) b.push('team');
+    return b;
+  }
+  function badgesHtml(list) {
+    const h = (list || []).filter(k => BADGE_DEFS[k]).map(k =>
+      `<span class="badge ${k}" data-badge="${k}" onclick="event.stopPropagation();showBadgeTip(event,'${k}')"><svg viewBox="0 0 24 24">${BADGE_DEFS[k].icon}</svg></span>`).join('');
+    return h ? `<span class="badges nb">${h}</span>` : '';
+  }
+  function nickBadges(row) { return badgesHtml(normBadges(row)); }
+  async function fetchBadges(ids) {
+    ids = [...new Set((ids || []).map(String))].filter(i => i && !i.startsWith('bot-') && /^[\w-]+$/.test(i));
+    if (!ids.length || !hasDb()) return;
+    try {
+      const rows = await db('players?cf_id=in.(' + ids.join(',') + ')&select=cf_id,badges,verified');
+      ids.forEach(i => { badgeCache[i] = []; });
+      rows.forEach(r => { badgeCache[String(r.cf_id)] = normBadges(r); });
+    } catch (_) {}
   }
 
   let tipTimer;
@@ -988,6 +1319,8 @@
     // действия: бан всегда, модер только админ и не на себе
     const actions = document.getElementById('adm-actions');
     let html = `<button class="ghost${profileMeta.banned ? '' : ' danger'}" style="margin:0;padding:12px;font-size:.85rem;width:auto" onclick="adminToggleBan()">${profileMeta.banned ? 'Разбанить' : 'Забанить'}</button>`;
+    html += `<button class="ghost" style="margin:0;padding:12px;font-size:.85rem;width:auto" onclick="adminAddWarn(1)">+ Варн (${profileMeta.warns || 0})</button>`;
+    html += `<button class="ghost" style="margin:0;padding:12px;font-size:.85rem;width:auto" onclick="adminAddWarn(-1)">− Варн</button>`;
     if (myRole === 'admin' && profileMeta.id !== me() && !ADMIN_IDS.includes(String(profileMeta.id))) {
       html += `<button class="ghost" style="margin:0;padding:12px;font-size:.85rem;width:auto" onclick="adminToggleMod()">${profileMeta.role === 'mod' ? 'Снять модера' : 'Сделать модером'}</button>`;
     }
@@ -1016,10 +1349,16 @@
     if (cur.has(key)) cur.delete(key); else cur.add(key);
     const list = [...cur];
     try {
+      if (key === 'tester' && cur.has('tester')) {
+        const r = await db('rpc/admin_set_tester', { method: 'POST',
+          body: JSON.stringify({ p_actor: String(me()), p_cf_id: String(profileMeta.id) }) });
+        if (!r || r.ok !== true) throw new Error('нет прав на выдачу бейджа тестера');
+      }
       await upsert('players', { cf_id: profileMeta.id, badges: list, verified: list.includes('team') });
       profileMeta.badges = list;
       renderBadges(list);
       updateAdminPanel();
+      if (key === 'tester') { loadMe(); loadAdminUsers(); }
       toast(cur.has(key) ? ('Выдан: ' + BADGE_DEFS[key].label) : ('Снят: ' + BADGE_DEFS[key].label), 'ok');
     } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
   }
@@ -1043,6 +1382,21 @@
     const v = (profileMeta.elo || 1000) + delta;
     document.getElementById('adm-elo').value = v;
     await adminSetElo();
+  }
+
+
+  async function adminAddWarn(delta) {
+    if (!isStaff() || !profileMeta.id) return;
+    const next = Math.max(0, (profileMeta.warns || 0) + delta);
+    try {
+      await upsert('players', { cf_id: profileMeta.id, warns: next });
+      profileMeta.warns = next;
+      const wb = document.getElementById('warn-badge');
+      if (next > 0) { wb.style.display = 'inline-block'; wb.textContent = 'Варны: ' + next; }
+      else wb.style.display = 'none';
+      updateAdminPanel();
+      toast(delta > 0 ? 'Варн выдан (' + next + ')' : 'Варн снят (' + next + ')', 'ok');
+    } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
   }
 
   async function adminToggleBan() {
@@ -1076,7 +1430,292 @@
     } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
   }
 
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('dblclick', e => e.preventDefault());
+
+  // ===== i18n =====
+  const I18N = {
+    ru: {
+      login: 'Войти', profile: 'Профиль',
+      home_title: 'Что ищем сегодня?',
+      home_sub: 'Найди игроков, посмотри чужую статистику или привяжи свой профиль.',
+      my_profile: 'Твой профиль',
+      menu_match: 'Мой матч', menu_match_d: 'Вернуться к текущей игре',
+      menu_admin: 'Модерация', menu_admin_d: 'Проверка матчей и эло',
+      menu_queue: 'Поиск игры', menu_queue_d: '5v5 · 2v2 · 1v1',
+      menu_lookup: 'Поиск профиля', menu_lookup_d: 'Статистика по ID игрока',
+      menu_board: 'Рейтинг', menu_board_d: 'Лучшие игроки по эло',
+      menu_link: 'Привязать аккаунт', menu_link_d: 'Подтверждение через игровой ник',
+      back: 'Назад', home: 'На главную', cancel: 'Отмена',
+      queue_title: 'Поиск игры',
+      queue_find: 'Найти игру', queue_leave: 'Выйти из очереди',
+      queue_idle: 'Ты не в очереди',
+      queue_searching: 'Ищем игроков…', queue_1v1: 'Ищем соперника…', queue_2v2: 'Ищем команду 2×2…',
+      mode_5v5: '5 на 5', mode_2v2: '2 на 2', mode_1v1: '1 на 1',
+      lookup_title: 'Поиск профиля', lookup_sub: 'Введи ID игрока, чтобы увидеть его уровень и прогресс.',
+      lookup_btn: 'Найти игрока', lookup_ph: 'Например, 478693',
+      recent: 'Недавние',
+      link_title: 'Привязка профиля', link_sub: 'Шаг 1 из 2. Введи свой ID, и мы выдадим код для ника.',
+      link_btn: 'Получить код', link_ph: 'Твой ID',
+      verify_title: 'Подтверждение', verify_sub: 'Шаг 2 из 2. Добавь этот код в свой ник в игре, затем нажми «Проверить ник».',
+      verify_btn: 'Проверить ник',
+      board_title: 'Рейтинг', board_sub: 'Топ-20 игроков по эло. Тапни по игроку, чтобы открыть профиль.',
+      match_start: 'Начать игру', match_upload: 'Загрузить скрин итогов',
+      admin_title: 'Модерация', admin_sub: 'Матчи со скринами на проверке.',
+      loading: 'Загружаем профиль…',
+      copy_link: 'Скопировать ссылку', unlink: 'Отвязать аккаунт',
+      matches_played: 'Сыграно матчей:',
+      in_search: 'в поиске', players: 'игроков',
+      your_profile: 'Твой профиль',
+      live_match: 'Матч идёт',
+      team: 'Команда',
+      lobby_code: 'Код доступа к лобби',
+      lobby_code_ph: 'Введи код из игры',
+      send_code: 'Отправить код всем',
+      update_code: 'Обновить код',
+      host_tips_title: 'Настройки лобби в игре:',
+      host_tips_rounds: 'Раунды:',
+      host_tips_wait: 'Включи галочку «Не начинать матч, пока не соберётся состав»',
+      team_warn: 'Важно: заходи строго в свою команду (T или CT), как указано выше. Чужой слот = предупреждение, при повторе — блокировка.',
+      report_btn: 'Пожаловаться на игрока',
+      report_title: 'Жалоба',
+      report_send: 'Отправить жалобу',
+      report_note: 'Комментарий (необязательно)',
+      report_wrong_team: 'Зашёл не в свою команду',
+      report_afk: 'АФК / не играет',
+      report_toxic: 'Токсичность / оскорбления',
+      report_cheat: 'Подозрение в читах',
+      report_throw: 'Сливает игру',
+      report_other: 'Другое',
+      warns: 'Варны',
+      status_lobby: 'Хост собирает лобби',
+      status_playing: 'Идёт игра',
+      status_review: 'Скрин на проверке',
+      hint_host_wait: 'Ты хост. Создай лобби в игре, выставь настройки ниже, введи код и отправь всем.',
+      hint_host_ready: 'Код отправлен. Когда все зайдут по коду в свою команду — нажми «Начать игру».',
+      hint_player_wait: 'Жди, пока хост создаст лобби и отправит код доступа.',
+      hint_player_code: 'Введи код в игре и зайди строго в свою команду. Жди старта от хоста.',
+      hint_playing_host: 'После игры загрузи скрин с итогами.',
+      hint_playing_player: 'Играй. Хост загрузит скрин итогов.',
+      hint_review: 'Модератор проверит скрин и начислит эло.',
+      host: 'Хост',
+    },
+    en: {
+      login: 'Log in', profile: 'Profile',
+      home_title: 'What are we looking for?',
+      home_sub: 'Find players, check stats, or link your account.',
+      my_profile: 'Your profile',
+      menu_match: 'My match', menu_match_d: 'Return to current game',
+      menu_admin: 'Moderation', menu_admin_d: 'Review matches and elo',
+      menu_queue: 'Find game', menu_queue_d: '5v5 · 2v2 · 1v1',
+      menu_lookup: 'Find profile', menu_lookup_d: 'Stats by player ID',
+      menu_board: 'Leaderboard', menu_board_d: 'Top players by elo',
+      menu_link: 'Link account', menu_link_d: 'Confirm via in-game nick',
+      back: 'Back', home: 'Home', cancel: 'Cancel',
+      queue_title: 'Find game',
+      queue_find: 'Find game', queue_leave: 'Leave queue',
+      queue_idle: 'Not in queue',
+      queue_searching: 'Searching for players…', queue_1v1: 'Searching for opponent…', queue_2v2: 'Searching for 2v2…',
+      mode_5v5: '5v5', mode_2v2: '2v2', mode_1v1: '1v1',
+      lookup_title: 'Find profile', lookup_sub: 'Enter player ID to see level and progress.',
+      lookup_btn: 'Find player', lookup_ph: 'e.g. 478693',
+      recent: 'Recent',
+      link_title: 'Link profile', link_sub: 'Step 1 of 2. Enter your ID to get a nick code.',
+      link_btn: 'Get code', link_ph: 'Your ID',
+      verify_title: 'Confirm', verify_sub: 'Step 2 of 2. Add this code to your in-game nick, then tap “Verify nick”.',
+      verify_btn: 'Verify nick',
+      board_title: 'Leaderboard', board_sub: 'Top-20 by elo. Tap a player to open profile.',
+      match_start: 'Start game', match_upload: 'Upload results screenshot',
+      admin_title: 'Moderation', admin_sub: 'Matches with screenshots pending review.',
+      loading: 'Loading profile…',
+      copy_link: 'Copy link', unlink: 'Unlink account',
+      matches_played: 'Matches played:',
+      in_search: 'in queue', players: 'players',
+      your_profile: 'Your profile',
+      live_match: 'Match live',
+      team: 'Team',
+      lobby_code: 'Lobby access code',
+      lobby_code_ph: 'Enter code from the game',
+      send_code: 'Send code to everyone',
+      update_code: 'Update code',
+      host_tips_title: 'In-game lobby settings:',
+      host_tips_rounds: 'Rounds:',
+      host_tips_wait: 'Enable “Don’t start the match until the roster is full”',
+      team_warn: 'Important: join strictly your team (T or CT) as shown above. Wrong side = warning, repeat = ban.',
+      report_btn: 'Report a player',
+      report_title: 'Report',
+      report_send: 'Submit report',
+      report_note: 'Comment (optional)',
+      report_wrong_team: 'Joined the wrong team',
+      report_afk: 'AFK / not playing',
+      report_toxic: 'Toxicity / insults',
+      report_cheat: 'Suspected cheating',
+      report_throw: 'Throwing the game',
+      report_other: 'Other',
+      warns: 'Warns',
+      status_lobby: 'Host is setting up the lobby',
+      status_playing: 'Match in progress',
+      status_review: 'Screenshot under review',
+      hint_host_wait: 'You are the host. Create a lobby in-game, set the options below, enter the access code and send it to everyone.',
+      hint_host_ready: 'Code sent. When everyone has joined their team via the code — tap “Start game”.',
+      hint_player_wait: 'Wait for the host to create a lobby and share the access code.',
+      hint_player_code: 'Enter the code in-game and join strictly your team. Wait for the host to start.',
+      hint_playing_host: 'After the game, upload the results screenshot.',
+      hint_playing_player: 'Play. The host will upload the results screenshot.',
+      hint_review: 'A moderator will review the screenshot and update elo.',
+      host: 'Host',
+    }
+  };
+  let lang = localStorage.getItem('cf_lang') || '';
+  const t = (k) => (I18N[lang] && I18N[lang][k]) || (I18N.ru[k]) || k;
+
+  function setLang(code) {
+    lang = code;
+    localStorage.setItem('cf_lang', code);
+    document.getElementById('lang-pick').style.display = 'none';
+    document.querySelector('.shell').style.display = '';
+    applyLang();
+    haptic('light');
+  }
+
+  function applyLang() {
+    if (!lang) return;
+    const L = I18N[lang] || I18N.ru;
+    const q = (sel) => document.querySelector(sel);
+    const set = (sel, text) => { const el = q(sel); if (el) el.textContent = text; };
+    set('#screen-home .title', L.home_title);
+    set('#screen-home .sub', L.home_sub);
+    set('#me-card .s', L.my_profile);
+    // menu items by order
+    const items = document.querySelectorAll('#screen-home .menu .item');
+    const menuMap = [
+      ['menu_match', 'menu_match_d'],
+      ['menu_admin', 'menu_admin_d'],
+      ['menu_queue', 'menu_queue_d'],
+      ['menu_lookup', 'menu_lookup_d'],
+      ['menu_board', 'menu_board_d'],
+      ['menu_link', 'menu_link_d'],
+    ];
+    // map by id when possible
+    const byId = {
+      'item-match': ['menu_match', 'menu_match_d'],
+      'item-admin': ['menu_admin', 'menu_admin_d'],
+      'item-link': ['menu_link', 'menu_link_d'],
+    };
+    document.querySelectorAll('#screen-home .menu .item').forEach(it => {
+      const ids = byId[it.id];
+      const tEl = it.querySelector('.t');
+      const dEl = it.querySelector('.d');
+      if (it.id === 'item-match') { if (tEl) tEl.textContent = L.menu_match; if (dEl) dEl.textContent = L.menu_match_d; }
+      else if (it.id === 'item-admin') { if (tEl) tEl.textContent = L.menu_admin; if (dEl) dEl.textContent = L.menu_admin_d; }
+      else if (it.id === 'item-link') { if (tEl) tEl.textContent = L.menu_link; if (dEl) dEl.textContent = L.menu_link_d; }
+      else if (tEl && tEl.textContent.includes('Поиск игры') || tEl && tEl.textContent.includes('Find game') || (tEl && /5v5/.test((dEl||{}).textContent||''))) {
+        // queue - detect by description pattern later
+      }
+    });
+    // safer: set by known structure
+    document.querySelectorAll('#screen-home .menu .item').forEach(it => {
+      const tEl = it.querySelector('.t'), dEl = it.querySelector('.d');
+      if (!tEl) return;
+      const key = it.getAttribute('data-i18n') || '';
+    });
+    // direct sets for static screens
+    set('#screen-lobbies .title', L.queue_title);
+    set('#mode-5v5', L.mode_5v5);
+    set('#mode-2v2', L.mode_2v2);
+    set('#mode-1v1', L.mode_1v1);
+    set('#screen-lookup .title', L.lookup_title);
+    set('#screen-lookup .sub', L.lookup_sub);
+    set('#btn-search', L.lookup_btn);
+    const inp = q('#inp-id'); if (inp) inp.placeholder = L.lookup_ph;
+    set('#recent-box .h', L.recent);
+    set('#screen-link-gen .title', L.link_title);
+    set('#screen-link-gen .sub', L.link_sub);
+    set('#screen-link-gen button:not(.ghost)', L.link_btn);
+    const lip = q('#inp-link-id'); if (lip) lip.placeholder = L.link_ph;
+    set('#screen-link-verify .title', L.verify_title);
+    set('#screen-link-verify .sub', L.verify_sub);
+    set('#btn-verify', L.verify_btn);
+    set('#screen-board .title', L.board_title);
+    set('#screen-board .sub', L.board_sub);
+    set('#btn-start', L.match_start);
+    // lobby / report
+    const lobbyTitle = document.querySelector('#m-lobby-code .team');
+    if (lobbyTitle) lobbyTitle.textContent = L.lobby_code;
+    const codePh = document.getElementById('inp-lobby-code'); if (codePh) codePh.placeholder = L.lobby_code_ph;
+    const hostTips = document.getElementById('m-host-tips');
+    if (hostTips) {
+      hostTips.innerHTML = '<b style="color:var(--orange);display:block;margin-bottom:6px">' + L.host_tips_title + '</b>• ' + L.host_tips_rounds + ' <b style="color:var(--text)" id="m-rounds">16</b><br>• ' + L.host_tips_wait;
+    }
+    const teamWarn = document.getElementById('m-team-warn');
+    if (teamWarn) teamWarn.innerHTML = L.team_warn.replace(/^(Важно:|Important:)/, '<b style="color:var(--err)">$1</b>');
+    const repBtn = document.getElementById('btn-report-open');
+    if (repBtn) repBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--err)"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> ' + L.report_btn;
+    const repTitle = document.querySelector('#report-box .t'); if (repTitle) repTitle.textContent = L.report_title;
+    const repNote = document.getElementById('report-note'); if (repNote) repNote.placeholder = L.report_note;
+    const repSend = document.querySelector('#report-box button[onclick="submitReport()"]'); if (repSend) repSend.textContent = L.report_send;
+    const rr = document.getElementById('report-reason');
+    if (rr) {
+      const vals = ['wrong_team','afk','toxic','cheat','throw','other'];
+      const keys = ['report_wrong_team','report_afk','report_toxic','report_cheat','report_throw','report_other'];
+      [...rr.options].forEach((o,i) => { if (keys[i]) o.textContent = L[keys[i]]; });
+    }
+
+    const upl = q('#m-upload'); if (upl) { const txt = upl.childNodes[0]; if (txt && txt.nodeType === 3) txt.textContent = L.match_upload; }
+    set('#screen-admin .title', L.admin_title);
+    set('#screen-loading .loader span', L.loading);
+    set('#btn-unlink', L.unlink);
+    // all back / home buttons roughly
+    document.querySelectorAll('button.ghost').forEach(b => {
+      const tx = b.textContent.trim();
+      if (tx === 'Назад' || tx === 'Back') b.textContent = L.back;
+      if (tx === 'На главную' || tx === 'Home') b.textContent = L.home;
+      if (tx === 'Отмена' || tx === 'Cancel') b.textContent = L.cancel;
+      if (tx === 'Скопировать ссылку' || tx === 'Copy link') b.textContent = L.copy_link;
+    });
+    // menu items hard map by current Russian/English
+    document.querySelectorAll('#screen-home .menu .item').forEach(it => {
+      const tEl = it.querySelector('.t'), dEl = it.querySelector('.d');
+      if (!tEl) return;
+      const map = [
+        [/Мой матч|My match/i, L.menu_match, L.menu_match_d],
+        [/Модерация|Moderation/i, L.menu_admin, L.menu_admin_d],
+        [/Поиск игры|Find game/i, L.menu_queue, L.menu_queue_d],
+        [/Поиск профиля|Find profile/i, L.menu_lookup, L.menu_lookup_d],
+        [/Рейтинг|Leaderboard/i, L.menu_board, L.menu_board_d],
+        [/Привязать|Link account/i, L.menu_link, L.menu_link_d],
+      ];
+      for (const [re, tt, dd] of map) {
+        if (re.test(tEl.textContent)) { tEl.textContent = tt; if (dEl) dEl.textContent = dd; break; }
+      }
+    });
+    // hub foot
+    const footLab = q('#hs-m-label');
+    if (footLab) footLab.textContent = L.matches_played;
+    const meS = q('#me-card .s'); if (meS) meS.textContent = L.my_profile;
+    // hubstats labels
+    const hs = q('.hubstats');
+    if (hs) {
+      const spans = hs.querySelectorAll('span');
+      if (spans[0]) spans[0].innerHTML = (spans[0].classList.contains('lv') ? '<i class="lv"></i>' : '') || '';
+      // rewrite
+      const blocks = hs.querySelectorAll('div');
+      if (blocks[0]) { const s = blocks[0].querySelector('span'); if (s) { s.className = 'lv'; s.textContent = L.in_search; } }
+      if (blocks[1]) { const s = blocks[1].querySelector('span'); if (s) s.textContent = L.players; }
+    }
+    updateAccountButtonText();
+    renderQueue();
+  }
+
   window.onload = () => {
+    if (!localStorage.getItem('cf_lang')) {
+      document.querySelector('.shell').style.display = 'none';
+      const lp = document.getElementById('lang-pick');
+      if (lp) lp.style.display = 'flex';
+    } else {
+      lang = localStorage.getItem('cf_lang');
+      applyLang();
+    }
     // Telegram Mini App
     if (tg) {
       try {
@@ -1117,6 +1756,19 @@
   .hubstats b{display:block;font:700 1.35rem var(--display);background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent}
   .hubstats span{display:block;color:var(--muted);font-size:.7rem;font-weight:700;margin-top:3px}
   .hubstats .lv::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;animation:pulse 1.4s infinite;vertical-align:middle}
+  /* Карточка набора тестировщиков */
+  .tester-card{position:relative;overflow:hidden;margin:0 0 16px;padding:18px;border-radius:18px;border:1px solid rgba(255,138,61,.34);
+    background:radial-gradient(ellipse at 100% 0%,rgba(255,138,61,.16),transparent 58%),linear-gradient(135deg,rgba(255,45,135,.12),rgba(255,138,61,.055)),rgba(0,0,0,.22)}
+  .tester-card:after{content:"";position:absolute;width:112px;height:112px;border:1px solid rgba(255,138,61,.13);border-radius:50%;right:-42px;top:22px;pointer-events:none}
+  .tester-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .tester-mark{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:var(--ember);color:#fff;font-size:17px;box-shadow:0 4px 18px rgba(255,45,135,.3)}
+  .tester-kicker{font-size:.62rem;letter-spacing:.13em;font-weight:900;color:var(--orange)}
+  .tester-card h2{font:700 1.02rem var(--display);line-height:1.4;margin-bottom:7px;max-width:290px}
+  .tester-card p{font-size:.82rem;line-height:1.55;color:var(--muted);margin-bottom:15px;max-width:320px}
+  .tester-card .tester-join{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:13px 14px;font-size:.82rem;box-shadow:0 8px 22px -10px rgba(255,45,135,.65)}
+  .tester-card .tester-join span:last-child{font-size:1.15rem}
+  .tester-card .tester-join.joined{background:rgba(61,255,168,.1);border:1px solid rgba(61,255,168,.35);color:var(--ok);box-shadow:none}
+  .tester-note{font-size:.72rem;color:var(--muted);line-height:1.4;margin-top:10px}
   .hub-foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:.8rem;font-weight:600}
   .hub-foot b{font-family:var(--display);font-weight:700;color:var(--text);margin-left:4px}
   /* слоты очереди */
@@ -1201,23 +1853,219 @@
   /* ---------- главная: BETA, живая статистика ---------- */
   document.querySelector('.brand span').insertAdjacentHTML('afterend','<small class="beta">BETA</small>');
   document.querySelector('#screen-home .sub').insertAdjacentHTML('afterend',
-    '<div class="hubstats"><div><b id="hs-q">0</b><span class="lv">в поиске</span></div><div><b id="hs-p">0</b><span>игроков</span></div></div>');
+    '<div class="hubstats"><div><b id="hs-q">0</b><span class="lv">'+(typeof t==='function'?t('in_search'):'в поиске')+'</span></div><div><b id="hs-p">0</b><span>'+(typeof t==='function'?t('players'):'игроков')+'</span></div></div>');
   function countUp(id,to){
     const el=document.getElementById(id),from=+el.textContent||0,t0=performance.now();
     if(from===to)return;
     (function f(t){const k=Math.min(1,(t-t0)/700);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})(t0);
   }
+  /* ---------- бейдж тестера: всем, кто зашёл под аккаунтом до TESTER_UNTIL ---------- */
+  const TESTER_UNTIL = new Date('2026-10-24T23:59:59+03:00').getTime(); // 3 дня от 21.10.2026 — поменяй дату тут
+  let grantBusy = false;
+  async function grantTesterBadge() {
+    const id = me();
+    if (!id || !hasDb() || Date.now() > TESTER_UNTIL || grantBusy) return;
+    if (localStorage.getItem('cf_tester_granted') === String(id)) return;
+    grantBusy = true;
+    try {
+      const rows = await db('players?cf_id=eq.' + encodeURIComponent(id) + '&select=badges,nick,avatar');
+      const cur = rows[0] || {};
+      let badges = Array.isArray(cur.badges) ? cur.badges.slice() : [];
+      if (!badges.includes('tester')) {
+        let nick = cur.nick || '', avatar = cur.avatar || '';
+        if (!nick) {
+          try {
+            const j = await (await fetch(`${PROXY}/user/${encodeURIComponent(id)}?t=${Date.now()}`)).json();
+            if (j.success) { nick = j.data.nickname || id; avatar = avatar || avatarUrl(j.data); }
+          } catch (_) {}
+        }
+        const res = await db('rpc/grant_tester', { method: 'POST',
+          body: JSON.stringify({ p_cf_id: String(id), p_nick: nick, p_avatar: avatar }) });
+        if (!res || res.ok !== true) {
+          if (res && res.reason === 'expired') localStorage.setItem('cf_tester_granted', String(id));
+          return;
+        }
+        badges.push('tester');
+        toast('Тебе выдан бейдж тестера!', 'ok');
+      }
+      badgeCache[String(id)] = badges;
+      localStorage.setItem('cf_tester_granted', String(id));
+      if (profileMeta && String(profileMeta.id) === String(id)) { profileMeta.badges = badges; renderBadges(badges); }
+      loadMe();
+      decorateMe();
+    } catch (_) {} finally { grantBusy = false; }
+  }
+  window.grantTesterBadge = grantTesterBadge;
+  window.enrollTester = grantTesterBadge;
+
   async function hubStats(){
     if(!hasDb())return;
     try{
-      const [q,m,p]=await Promise.all([db('queue?select=cf_id'),db('matches?status=eq.done&select=id'),db('players?nick=not.is.null&select=cf_id')]);
+      const [q,m,p]=await Promise.all([db('queue?select=cf_id&cf_id=not.like.bot-*'),db('matches?status=eq.done&select=id'),db('players?nick=not.is.null&cf_id=not.like.bot-*&select=cf_id')]);
       countUp('hs-q',q.length);countUp('hs-m',m.length);countUp('hs-p',p.length);
     }catch(e){}
   }
   const _rh=refreshHome;
-  refreshHome=function(){_rh();hubStats()};
+  refreshHome=function(){_rh();hubStats();grantTesterBadge();if(typeof applyLang==='function'&&lang)applyLang();};
   setInterval(()=>{if(document.getElementById('screen-home').classList.contains('active')&&!document.hidden)hubStats()},8000);
   hubStats();
+  grantTesterBadge();
+
+  /* ---------- плашка с обратным отсчётом ---------- */
+  (function () {
+    const sub = document.querySelector('#screen-home .sub');
+    if (!sub || document.getElementById('tcount')) return;
+    sub.insertAdjacentHTML('afterend',
+      '<div class="tcount" id="tcount" onclick="tcountTap()"><div><div class="tc-t">Время авторизоваться и стать тестером</div><div class="tc-s" id="tc-s"></div></div><div class="tc-time" id="tc-time">--:--:--</div></div>');
+    window.tcountTap = () => { if (!me()) switchScreen('screen-link-gen'); };
+    const pad = n => String(n).padStart(2, '0');
+    function tick() {
+      const box = document.getElementById('tcount'); if (!box) return;
+      const left = TESTER_UNTIL - Date.now();
+      const has = me() && localStorage.getItem('cf_tester_granted') === String(me());
+      if (left <= 0 || has) { box.classList.remove('show'); return; }
+      box.classList.add('show');
+      const d = Math.floor(left / 86400000), h = Math.floor(left / 3600000) % 24,
+            m = Math.floor(left / 60000) % 60, sec = Math.floor(left / 1000) % 60;
+      document.getElementById('tc-time').textContent = (d ? d + 'д ' : '') + pad(h) + ':' + pad(m) + ':' + pad(sec);
+      document.getElementById('tc-s').textContent = me() ? 'Бейдж выдаётся автоматически' : 'Привяжи аккаунт — получишь бейдж';
+    }
+    tick(); setInterval(tick, 1000);
+  })();
+
+  /* ---------- бейджи рядом с ником: карточка «Твой профиль» ---------- */
+  async function decorateMe() {
+    const id = me(); if (!id) return;
+    if (!(String(id) in badgeCache)) await fetchBadges([id]);
+    const n = document.getElementById('me-nick');
+    if (n && !n.querySelector('.badges')) n.insertAdjacentHTML('beforeend', badgesHtml(badgeCache[String(id)]));
+  }
+  const _fm = fillMe;
+  fillMe = function (d) { _fm(d); decorateMe(); };
+
+  /* ---------- бейджи в матче ---------- */
+  function decorateMatch() {
+    document.querySelectorAll('#m-players .pl').forEach(d => {
+      const sm = d.querySelector('small'), b = d.querySelector('b');
+      if (!sm || !b || b.querySelector('.badges')) return;
+      const id = (sm.textContent.match(/ID\s+(\S+)/) || [])[1];
+      if (id && badgeCache[id]) b.insertAdjacentHTML('beforeend', badgesHtml(badgeCache[id]));
+    });
+  }
+  const _rm2 = renderMatch;
+  renderMatch = function () {
+    _rm2();
+    decorateMatch();
+    if (curMatch && curMatch.players) {
+      const miss = curMatch.players.map(p => String(p.id)).filter(i => !(i in badgeCache));
+      if (miss.length) fetchBadges(miss).then(decorateMatch);
+    }
+  };
+
+  /* ---------- список игроков в поиске катки (без ботов) ---------- */
+  let qListBusy = false;
+  async function refreshQueueList() {
+    if (qListBusy || !hasDb()) return;
+    qListBusy = true;
+    try {
+      const rows = (await db('queue?mode=eq.' + qMode + '&select=cf_id,nick,avatar&order=joined_at.asc'))
+        .filter(r => !String(r.cf_id).startsWith('bot-'));
+      await fetchBadges(rows.map(r => r.cf_id));
+      const box = document.getElementById('q-list'); if (!box) return;
+      box.innerHTML = rows.length ? '<div class="team" style="margin-bottom:8px">В очереди</div>' + rows.map(r =>
+        `<div class="q-row"><img alt="" src="${esc(r.avatar || 'https://counterflame.com/favicon.ico')}"><b>${esc(r.nick || r.cf_id)}${badgesHtml(badgeCache[String(r.cf_id)])}</b></div>`).join('') : '';
+    } catch (_) {} finally { qListBusy = false; }
+  }
+  (function () {
+    const empty = document.querySelector('#screen-lobbies .empty');
+    if (empty && !document.getElementById('q-list')) empty.insertAdjacentHTML('afterend', '<div id="q-list" style="margin-bottom:14px"></div>');
+  })();
+  const _rq2 = renderQueue;
+  renderQueue = function (n) { _rq2(n); refreshQueueList(); };
+  setInterval(() => { if (document.getElementById('screen-lobbies').classList.contains('active') && !document.hidden) refreshQueueList(); }, 4000);
+
+  /* ---------- меню тестеров ---------- */
+  const TESTER_TASKS = [
+    ['queue', 'Встать в очередь в «Поиске игры» и выйти из неё'],
+    ['duel', 'Сыграть тестовую дуэль 1 на 1'],
+    ['lookup', 'Найти профиль другого игрока по ID'],
+    ['board', 'Открыть рейтинг и проверить бейджи у игроков'],
+    ['report', 'Отправить тестовую жалобу из матча'],
+    ['lang', 'Переключить язык и проверить, что всё переведено']
+  ];
+  const taskKey = () => 'cf_tester_tasks_' + me();
+  const getTasks = () => { try { return JSON.parse(localStorage.getItem(taskKey()) || '{}'); } catch (_) { return {}; } };
+  function toggleTesterTask(k) {
+    const t = getTasks(); t[k] = !t[k];
+    localStorage.setItem(taskKey(), JSON.stringify(t));
+    haptic('light'); renderTesterTasks();
+  }
+  window.toggleTesterTask = toggleTesterTask;
+  function renderTesterTasks() {
+    const box = document.getElementById('tester-tasks'); if (!box) return;
+    const t = getTasks(), done = TESTER_TASKS.filter(x => t[x[0]]).length;
+    box.innerHTML = `<div class="t">Чек-лист тестирования</div>
+      <div class="tbar"><div style="width:${Math.round(done / TESTER_TASKS.length * 100)}%"></div></div>
+      <p class="hint" style="margin-bottom:10px">Выполнено ${done} из ${TESTER_TASKS.length}</p>` +
+      TESTER_TASKS.map(x => `<div class="task${t[x[0]] ? ' done' : ''}" onclick="toggleTesterTask('${x[0]}')"><i>✓</i><span>${x[1]}</span></div>`).join('');
+  }
+  function copyBugTemplate() {
+    const txt = 'Баг в CF HUB\nГде: \nШаги: 1) \nОжидал: \nПолучил: \nМой ID: ' + (me() || '') + '\nУстройство: ' + navigator.userAgent.slice(0, 80);
+    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject())
+      .then(() => toast('Шаблон баг-репорта скопирован', 'ok'))
+      .catch(() => toast('Не удалось скопировать', 'err'));
+  }
+  window.copyBugTemplate = copyBugTemplate;
+
+  async function loadTesterMenu() {
+    const box = document.getElementById('tester-roster');
+    if (!box) return;
+    if (!me() || !hasDb()) { box.innerHTML = '<p class="hint">Привяжи аккаунт, чтобы проверить доступ.</p>'; return; }
+    try {
+      const mine = await db('players?cf_id=eq.' + encodeURIComponent(me()) + '&select=badges');
+      if (!(mine[0] && Array.isArray(mine[0].badges) && mine[0].badges.includes('tester'))) {
+        document.getElementById('item-testers').style.display = 'none';
+        box.innerHTML = '<p class="hint">Этот раздел доступен только игрокам с бейджем тестировщика.</p>';
+        return;
+      }
+      const left = TESTER_UNTIL - Date.now();
+      const promo = left > 0
+        ? `<p class="hint">Бейдж тестера сейчас выдаётся всем, кто заходит под аккаунтом — ещё ${Math.max(1, Math.ceil(left / 86400000))} дн.</p>` : '';
+      box.innerHTML = `<div class="mcard"><div class="t">Статус доступа</div><p class="hint">Бейдж тестировщика подтверждён. Доступ к разделу активен.</p>${promo}</div>
+        <div class="mcard" id="tester-tasks"></div>
+        <div class="mcard"><div class="t">Нашёл баг?</div><p class="hint" style="margin-bottom:10px">Скопируй шаблон, заполни и отправь команде.</p>
+          <button class="ghost" style="margin:0" onclick="copyBugTemplate()">Скопировать шаблон баг-репорта</button></div>
+        <div class="mcard"><div class="t">Тестировщики</div><div id="tester-list" style="margin-top:10px"><p class="hint">Загружаем…</p></div></div>`;
+      renderTesterTasks();
+      const all = await db('players?select=cf_id,nick,avatar,badges&nick=not.is.null&cf_id=not.like.bot-*&limit=500');
+      const ts = all.filter(u => !String(u.cf_id).startsWith('bot-') && Array.isArray(u.badges) && u.badges.includes('tester'));
+      document.getElementById('tester-list').innerHTML = ts.length ? ts.map(u =>
+        `<div class="q-row"><img alt="" src="${esc(u.avatar || 'https://counterflame.com/favicon.ico')}"><b>${esc(u.nick || u.cf_id)}${nickBadges(u)}</b></div>`).join('')
+        + `<p class="hint" style="margin-top:8px">Всего: ${ts.length}</p>` : '<p class="hint">Пока никого.</p>';
+    } catch (e) { box.innerHTML = '<p class="hint">Не удалось проверить доступ: ' + esc(e.message) + '</p>'; }
+  }
+
+  async function loadAdminUsers() {
+    const box = document.getElementById('a-users');
+    if (!box || !isStaff()) return;
+    box.innerHTML = '<p class="hint">Загружаем пользователей…</p>';
+    try {
+      const users = (await db('players?select=cf_id,nick,badges,verified,role&nick=not.is.null&cf_id=not.like.bot-*&order=cf_id.asc'))
+        .filter(u => !String(u.cf_id).startsWith('bot-'));
+      if (!users.length) { box.innerHTML = '<p class="hint">Пользователей пока нет.</p>'; return; }
+      box.innerHTML = users.map(u => {
+        const bl = normBadges(u);
+        const badgeHtml = bl.filter(k => BADGE_DEFS[k]).length
+          ? bl.filter(k => BADGE_DEFS[k]).map(k => `<span class="badge ${esc(k)}" title="${esc(BADGE_DEFS[k].label)}" onclick="showBadgeTip(event,'${esc(k)}')"><svg viewBox="0 0 24 24">${BADGE_DEFS[k].icon}</svg></span>`).join('')
+          : '<small>Без бейджей</small>';
+        return '<div class="badge-list-row"><div class="who"><b>' + esc(u.nick || 'Без ника') + '</b><small>ID ' + esc(u.cf_id) + (u.role ? ' · ' + esc(u.role) : '') + '</small></div><div class="badges">' + badgeHtml + '</div></div>';
+      }).join('');
+    } catch (e) {
+      box.innerHTML = '<p class="hint">Не удалось загрузить список: ' + esc(e.message) + '</p>';
+    }
+  }
+  window.loadAdminUsers = loadAdminUsers;
+  window.loadTesterMenu = loadTesterMenu;
 })();
 </script>
 </body>
