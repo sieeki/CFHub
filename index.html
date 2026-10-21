@@ -105,6 +105,8 @@
   .loader{display:flex;flex-direction:column;align-items:center;gap:14px;padding:34px 0;color:var(--muted);font-size:.88rem}
   .spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--pink);animation:sp .8s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
+  .skel{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite;border-radius:10px}
+  @keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
   /* профиль */
   .hero{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:22px}
@@ -161,8 +163,8 @@
   .mcard .btns button{padding:12px;font-size:.82rem}
   .stat.wide{grid-column:1/-1}
 
-  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-  .seg button{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);box-shadow:none;padding:12px;font-size:.85rem}
+  .seg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+  .seg button{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);box-shadow:none;padding:12px 8px;font-size:.82rem}
   .seg button.on{background:rgba(255,45,135,.14);border-color:var(--pink);color:#fff}
   .seg button:hover{filter:none;transform:none}
   #live-pill{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);display:none;align-items:center;gap:10px;
@@ -220,7 +222,7 @@
         </div>
         <div class="item" tabindex="0" onclick="switchScreen('screen-lobbies')">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v2H6v-2H4v-2h2V9h2v2h3v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
-          <div><div class="t">Поиск игры</div><div class="d">Очередь на 10 игроков</div></div>
+          <div><div class="t">Поиск игры</div><div class="d">5v5 · 2v2 · 1v1</div></div>
           <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
         <div class="item" tabindex="0" onclick="switchScreen('screen-lookup')">
@@ -239,13 +241,18 @@
           <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
       </div>
+      <div class="hub-foot">Сыграно матчей: <b id="hs-m">0</b></div>
     </section>
 
     <!-- ПОИСК ИГРЫ -->
     <section id="screen-lobbies" class="screen">
       <h1 class="title">Поиск игры</h1>
       <p class="sub" id="q-sub"></p>
-      <div class="seg"><button id="mode-5v5" onclick="setMode('5v5')">5 на 5</button><button id="mode-1v1" onclick="setMode('1v1')">Дуэль 1 на 1</button></div>
+      <div class="seg">
+        <button id="mode-5v5" onclick="setMode('5v5')">5 на 5</button>
+        <button id="mode-2v2" onclick="setMode('2v2')">2 на 2</button>
+        <button id="mode-1v1" onclick="setMode('1v1')">1 на 1</button>
+      </div>
       <div class="empty"><b id="q-count" style="font-family:var(--display);font-size:1.6rem">0 / 10</b><span id="q-state">Ты не в очереди</span></div>
       <button id="btn-queue" onclick="toggleQueue()">Найти игру</button>
       <div id="bot-tools" style="display:none">
@@ -327,7 +334,13 @@
 
     <!-- ЗАГРУЗКА -->
     <section id="screen-loading" class="screen">
-      <div class="loader"><div class="spin"></div>Загружаем профиль…</div>
+      <div class="loader">
+        <div class="spin"></div>
+        <span>Загружаем профиль…</span>
+        <div class="skel" style="width:112px;height:112px;border-radius:50%;margin:18px auto 0"></div>
+        <div class="skel" style="width:60%;height:18px;margin:14px auto 8px"></div>
+        <div class="skel" style="width:40%;height:12px;margin:0 auto"></div>
+      </div>
     </section>
 
     <!-- ПРОФИЛЬ -->
@@ -384,6 +397,9 @@
     t.className = 'show ' + (type || '');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.className = '', 3200);
+    if (type === 'ok') haptic('success');
+    else if (type === 'err') haptic('error');
+    else haptic('light');
   }
 
   function switchScreen(id) {
@@ -411,8 +427,27 @@
   const me = () => localStorage.getItem('cf_linked_user');
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let myRole = 'player', inQueue = false, curMatch = null, qMode = localStorage.getItem('cf_mode') || '5v5';
-  const qNeed = () => qMode === '1v1' ? 2 : 10;
+  const qNeed = () => qMode === '1v1' ? 2 : qMode === '2v2' ? 4 : 10;
   const isStaff = () => myRole === 'admin' || myRole === 'mod';
+
+  // Telegram WebApp
+  const tg = window.Telegram?.WebApp;
+  function haptic(type = 'light') {
+    try {
+      if (!tg?.HapticFeedback) return;
+      if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+      else if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
+      else if (type === 'warning') tg.HapticFeedback.notificationOccurred('warning');
+      else tg.HapticFeedback.impactOccurred(type);
+    } catch (_) {}
+  }
+  function syncClosing() {
+    try {
+      if (!tg) return;
+      if (inQueue || curMatch) tg.enableClosingConfirmation();
+      else tg.disableClosingConfirmation();
+    } catch (_) {}
+  }
 
   async function db(path, opt = {}) {
     const r = await fetch(SUPA_URL + '/rest/v1/' + path, { ...opt, headers: {
@@ -437,12 +472,20 @@
   // ---- очередь ----
   function renderQueue(n) {
     document.getElementById('q-count').textContent = (n === undefined ? 0 : n) + ' / ' + qNeed();
-    document.getElementById('q-state').textContent = inQueue ? (qMode === '1v1' ? 'Ищем соперника…' : 'Ищем игроков…') : 'Ты не в очереди';
+    document.getElementById('q-state').textContent = inQueue
+      ? (qMode === '1v1' ? 'Ищем соперника…' : qMode === '2v2' ? 'Ищем команду 2×2…' : 'Ищем игроков…')
+      : 'Ты не в очереди';
     document.getElementById('btn-queue').textContent = inQueue ? 'Выйти из очереди' : 'Найти игру';
     document.getElementById('q-sub').textContent = qMode === '1v1'
       ? 'Найдём соперника, разделим вас по командам и случайно выберем хоста.'
+      : qMode === '2v2'
+      ? 'Когда наберётся 4 игрока, мы разделим их на две команды по 2 и выберем хоста.'
       : 'Когда наберётся 10 игроков, мы разделим их на две команды и случайно выберем хоста.';
-    ['5v5', '1v1'].forEach(m => document.getElementById('mode-' + m).classList.toggle('on', m === qMode));
+    ['5v5', '2v2', '1v1'].forEach(m => {
+      const el = document.getElementById('mode-' + m);
+      if (el) el.classList.toggle('on', m === qMode);
+    });
+    syncClosing();
   }
   async function addBots(fill) {
     if (!hasDb()) return toast('Сначала подключи Supabase', 'err');
@@ -511,6 +554,7 @@
       }
       document.getElementById('item-match').style.display = curMatch ? 'flex' : 'none';
       syncLive();
+      syncClosing();
       if (document.getElementById('screen-admin').classList.contains('active')) loadAdmin();
     } catch (e) {}
   }
@@ -521,7 +565,7 @@
   function renderMatch() {
     const m = curMatch; if (!m) return;
     const host = m.host_id === me();
-    document.getElementById('m-title').textContent = (m.mode === '1v1' ? 'Дуэль #' : 'Матч #') + m.id;
+    document.getElementById('m-title').textContent = (m.mode === '1v1' ? 'Дуэль #' : m.mode === '2v2' ? '2×2 #' : 'Матч #') + m.id;
     document.getElementById('m-status').textContent = { lobby: 'Хост собирает лобби', playing: 'Идёт игра', review: 'Скрин на проверке' }[m.status];
     const wrap = document.getElementById('m-players'); wrap.innerHTML = '';
     ['A', 'B'].forEach(t => {
@@ -613,7 +657,7 @@
           const img = (m.screenshot || '').startsWith('data:image/') ? `<img src="${esc(m.screenshot)}" alt="Скрин матча">` : '<p class="hint">Скрина нет</p>';
           const rows = m.players.map((p, i) => `<div class="pl"><div><b>${esc(p.nick)}</b><small>Команда ${p.team} · ID ${esc(p.id)}</small></div>
             <input type="number" inputmode="numeric" id="d-${m.id}-${i}" value="0" style="width:84px;margin:0 0 0 auto;padding:10px"></div>`).join('');
-          return `<div class="mcard"><div class="t">${m.mode === '1v1' ? 'Дуэль' : 'Матч'} #${m.id}</div>${img}
+          return `<div class="mcard"><div class="t">${m.mode === '1v1' ? 'Дуэль' : m.mode === '2v2' ? '2×2' : 'Матч'} #${m.id}</div>${img}
             <div class="btns" style="margin-bottom:10px"><button class="ghost" style="margin:0" onclick="presetElo(${m.id},'A')">Победила A: +25 / −25</button>
             <button class="ghost" style="margin:0" onclick="presetElo(${m.id},'B')">Победила B: +25 / −25</button></div>${rows}
             <div class="btns" style="margin-top:10px"><button onclick="applyElo(${m.id})">Начислить эло</button>
@@ -824,11 +868,21 @@
   }
 
   window.onload = () => {
+    // Telegram Mini App
+    if (tg) {
+      try {
+        tg.ready();
+        tg.expand();
+        if (tg.setHeaderColor) tg.setHeaderColor('#0c0710');
+        if (tg.setBackgroundColor) tg.setBackgroundColor('#0c0710');
+      } catch (_) {}
+    }
     renderQueue();
     updateAccountButtonText();
     if (hasDb() && me()) db('queue?cf_id=eq.' + me()).then(r => { inQueue = r.length > 0; if (r[0] && r[0].mode) qMode = r[0].mode; renderQueue(); tick(); }).catch(() => {});
     const h = location.hash.slice(1);
     /^\d+$/.test(h) ? lookupPlayer(h) : switchScreen('screen-home');
+    syncClosing();
   };
 </script>
 <!-- CF HUB upgrade -->
@@ -849,11 +903,13 @@
   #screen-home .title{background:linear-gradient(90deg,#fff 0%,#ffb3d3 50%,#fff 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
   @keyframes shine{to{background-position:-200% 0}}
   /* живая статистика */
-  .hubstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .hubstats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
   .hubstats div{padding:12px 6px;border-radius:14px;text-align:center;background:rgba(0,0,0,.28);border:1px solid var(--line)}
   .hubstats b{display:block;font:700 1.35rem var(--display);background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent}
   .hubstats span{display:block;color:var(--muted);font-size:.7rem;font-weight:700;margin-top:3px}
   .hubstats .lv::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;animation:pulse 1.4s infinite;vertical-align:middle}
+  .hub-foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:.8rem;font-weight:600}
+  .hub-foot b{font-family:var(--display);font-weight:700;color:var(--text);margin-left:4px}
   /* слоты очереди */
   .slots{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:14px}
   .slots i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--line);transition:all .3s}
@@ -917,11 +973,13 @@
   let seen=null;
   function matchFound(m){
     const o=document.createElement('div');o.className='mf';
+    const modeLabel = m.mode==='1v1' ? 'Дуэль' : m.mode==='2v2' ? '2×2' : 'Матч';
     const av=m.players.slice(0,10).map((p,i)=>`<img alt="" style="animation-delay:${.15+i*.06}s" src="${esc(p.avatar||'https://counterflame.com/favicon.ico')}">`).join('');
-    o.innerHTML=`<div><div class="mf-k">${m.mode==='1v1'?'Дуэль':'Матч'} #${m.id} · ${m.players.length} игроков</div><div class="mf-t">МАТЧ<br>НАЙДЕН</div><div class="mf-av">${av}</div></div>`;
-    o.onclick=()=>o.remove();document.body.appendChild(o);
-    setTimeout(()=>{o.classList.add('out');setTimeout(()=>o.remove(),400)},2800);
-    try{navigator.vibrate&&navigator.vibrate([80,40,80])}catch(e){}
+    o.innerHTML=`<div><div class="mf-k">${modeLabel} #${m.id} · ${m.players.length} игроков</div><div class="mf-t">МАТЧ<br>НАЙДЕН</div><div class="mf-av">${av}</div><div style="margin-top:18px;color:var(--muted);font-size:.85rem;font-weight:600">Нажми, чтобы открыть</div></div>`;
+    o.onclick=()=>{o.remove();openMatch()};document.body.appendChild(o);
+    setTimeout(()=>{o.classList.add('out');setTimeout(()=>o.remove(),400)},3200);
+    haptic('heavy');
+    try{navigator.vibrate&&navigator.vibrate([80,40,120,40,80])}catch(e){}
   }
   const _rm=renderMatch;
   renderMatch=function(){
@@ -934,7 +992,7 @@
   /* ---------- главная: BETA, живая статистика ---------- */
   document.querySelector('.brand span').insertAdjacentHTML('afterend','<small class="beta">BETA</small>');
   document.querySelector('#screen-home .sub').insertAdjacentHTML('afterend',
-    '<div class="hubstats"><div><b id="hs-q">0</b><span class="lv">в поиске</span></div><div><b id="hs-m">0</b><span>матчей сыграно</span></div><div><b id="hs-p">0</b><span>игроков</span></div></div>');
+    '<div class="hubstats"><div><b id="hs-q">0</b><span class="lv">в поиске</span></div><div><b id="hs-p">0</b><span>игроков</span></div></div>');
   function countUp(id,to){
     const el=document.getElementById(id),from=+el.textContent||0,t0=performance.now();
     if(from===to)return;
