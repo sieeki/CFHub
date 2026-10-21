@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0710">
+<title>CF HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0710; --panel:rgba(28,17,32,.72); --panel-solid:#1a1020; --line:rgba(255,255,255,.08); --line-hot:rgba(255,64,140,.45);
+    --pink:#ff2d87; --orange:#ff8a3d; --ember:linear-gradient(135deg,#ff2d87 0%,#ff6a3d 100%);
+    --text:#fff6fa; --muted:#a58fa0; --ok:#3dffa8; --err:#ff5470;
+    --display:'Unbounded',system-ui,sans-serif; --body:'Manrope',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{min-height:100%}
+  body{
+    font-family:var(--body);background:var(--bg);color:var(--text);
+    display:flex;flex-direction:column;align-items:center;
+    padding:max(20px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));
+    position:relative;overflow-x:hidden;
+  }
+  /* атмосфера: два тёплых пятна и тонкая сетка */
+  body::before{content:"";position:fixed;inset:0;z-index:-2;
+    background:
+      radial-gradient(520px 420px at 85% -5%,rgba(255,45,135,.28),transparent 70%),
+      radial-gradient(460px 380px at -10% 105%,rgba(255,138,61,.16),transparent 70%),var(--bg);}
+  body::after{content:"";position:fixed;inset:0;z-index:-1;opacity:.5;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%);}
+
+  .shell{width:100%;max-width:440px;margin:auto 0;}
+
+  /* шапка */
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:900;font-size:1.05rem;letter-spacing:.02em}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:var(--ember);display:grid;place-items:center;box-shadow:0 6px 22px rgba(255,45,135,.45)}
+  .brand-mark svg{width:19px;height:19px;fill:#fff}
+  .brand em{font-style:normal;background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  .chip{display:flex;align-items:center;gap:8px;width:auto;padding:8px 14px 8px 10px;border-radius:999px;
+    background:var(--panel);border:1px solid var(--line);color:var(--text);font:700 .8rem var(--body);cursor:pointer;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:border-color .2s,transform .15s;box-shadow:none;text-transform:none;letter-spacing:0}
+  .chip:hover{border-color:var(--line-hot);background:var(--panel)}
+  .chip .dot{width:22px;height:22px;border-radius:50%;background:var(--ember);display:grid;place-items:center}
+  .chip .dot svg{width:12px;height:12px;fill:#fff}
+
+  /* карточка */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 30px 60px -20px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05);}
+  .screen{display:none}
+  .screen.active{display:block;animation:in .28s ease-out}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  h1.title{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.2;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:.88rem;line-height:1.5;margin-bottom:20px}
+
+  /* меню */
+  .menu{display:flex;flex-direction:column;gap:10px}
+  .item{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;background:rgba(255,255,255,.03);
+    border:1px solid var(--line);cursor:pointer;transition:border-color .2s,background .2s,transform .15s}
+  .item:hover{border-color:var(--line-hot);background:rgba(255,45,135,.07)}
+  .item:active{transform:scale(.985)}
+  .ico{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(255,45,135,.12);border:1px solid rgba(255,45,135,.25)}
+  .ico svg{width:21px;height:21px;fill:var(--pink)}
+  .item .t{font-weight:800;font-size:.95rem}
+  .item .d{color:var(--muted);font-size:.78rem;margin-top:2px}
+  .item .go{margin-left:auto;width:18px;height:18px;fill:var(--muted);transition:transform .2s,fill .2s}
+  .item:hover .go{fill:var(--pink);transform:translateX(3px)}
+
+  /* поля и кнопки */
+  input,button{width:100%;font-family:var(--body);border-radius:14px;outline:none;transition:all .2s}
+  input{padding:15px 16px;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);font-size:1rem;font-weight:700;text-align:center;margin-bottom:12px}
+  input::placeholder{color:#6f5b6a;font-weight:500}
+  input:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(255,45,135,.15)}
+  input[type=number]{-moz-appearance:textfield}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+  button{padding:15px 16px;border:0;cursor:pointer;color:#fff;background:var(--ember);font-weight:800;font-size:.95rem;box-shadow:0 10px 26px -8px rgba(255,45,135,.65)}
+  button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  button:active{transform:translateY(1px)}
+  button:disabled{background:#2a1c2c;color:#6f5b6a;box-shadow:none;cursor:not-allowed;transform:none;filter:none}
+  .ghost{background:transparent;border:1px solid var(--line);color:var(--muted);box-shadow:none;margin-top:10px;font-weight:700}
+  .ghost:hover{color:#fff;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);filter:none}
+  button:focus-visible,.item:focus-visible,input:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+  /* лобби: пустое состояние */
+  .empty{text-align:center;padding:26px 10px 22px;border:1px dashed rgba(255,255,255,.12);border-radius:16px;margin-bottom:14px}
+  .empty svg{width:34px;height:34px;fill:var(--muted);margin-bottom:10px}
+  .empty b{display:block;font-size:.95rem;margin-bottom:4px}
+  .empty span{color:var(--muted);font-size:.82rem}
+
+  /* привязка */
+  .steps{display:flex;gap:6px;margin-bottom:18px}
+  .steps i{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.1)}
+  .steps i.on{background:var(--ember)}
+  .code{display:flex;align-items:center;justify-content:center;gap:12px;padding:18px;border-radius:16px;margin-bottom:14px;
+    background:rgba(255,45,135,.07);border:1px dashed var(--line-hot);
+    font-family:var(--display);font-weight:700;font-size:1.6rem;letter-spacing:.08em;color:#fff;text-shadow:0 0 22px rgba(255,45,135,.7)}
+
+  /* загрузка */
+  .loader{display:flex;flex-direction:column;align-items:center;gap:14px;padding:34px 0;color:var(--muted);font-size:.88rem}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--pink);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* профиль */
+  .hero{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:22px}
+  .ring{--p:10;--c:var(--pink);position:relative;width:112px;height:112px;border-radius:50%;margin-bottom:16px;padding:5px;
+    background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.08) 0);box-shadow:0 0 40px -6px var(--c)}
+  .ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#120a16;border:4px solid var(--panel-solid);display:block}
+  .lvl{position:absolute;right:-6px;bottom:-4px;min-width:36px;height:36px;padding:0 8px;border-radius:12px;display:grid;place-items:center;
+    font-family:var(--display);font-weight:900;font-size:.9rem;border:3px solid var(--panel-solid);background:var(--c);color:#14080f}
+  .hero h2{font-family:var(--display);font-weight:700;font-size:1.4rem;word-break:break-word;margin-bottom:8px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .tag{font-size:.75rem;font-weight:700;color:var(--muted);padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+  .tag.ok{color:var(--ok);border-color:rgba(61,255,168,.3);background:rgba(61,255,168,.07)}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+  .stat{padding:16px;border-radius:16px;background:rgba(0,0,0,.28);border:1px solid var(--line)}
+  .stat .l{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:.78rem;font-weight:700;margin-bottom:8px}
+  .stat .l svg{width:15px;height:15px;fill:currentColor}
+  .stat .v{font-family:var(--display);font-weight:700;font-size:1.8rem;line-height:1}
+  .stat.hot .v{background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat.hot .l{color:var(--orange)}
+
+  /* моя карточка на главной */
+  .me{display:none;align-items:center;gap:14px;padding:14px;border-radius:18px;margin-bottom:14px;cursor:pointer;
+    background:linear-gradient(135deg,rgba(255,45,135,.16),rgba(255,138,61,.08));border:1px solid var(--line-hot);transition:transform .15s}
+  .me:active{transform:scale(.985)}
+  .me.show{display:flex}
+  .me img{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#120a16;border:2px solid var(--c,var(--pink))}
+  .me .n{font-weight:800;font-size:1rem;word-break:break-word}
+  .me .s{color:var(--muted);font-size:.78rem;margin-top:2px}
+  .me .lv{margin-left:auto;font-family:var(--display);font-weight:900;font-size:.85rem;padding:7px 11px;border-radius:11px;background:var(--c,var(--pink));color:#14080f}
+  .recent{margin:2px 0 14px;display:none}
+  .recent.show{display:block}
+  .recent .h{color:var(--muted);font-size:.78rem;font-weight:700;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .rc{width:auto;padding:8px 13px;border-radius:999px;font-size:.82rem;font-weight:700;background:rgba(255,255,255,.04);
+    border:1px solid var(--line);color:var(--text);box-shadow:none}
+  .rc:hover{border-color:var(--line-hot);background:rgba(255,45,135,.08);filter:none;transform:none}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row .ghost{margin-top:10px}
+  .danger{color:var(--err)!important}
+
+  .team{margin:14px 0 8px;font-weight:800;font-size:.85rem;color:var(--orange)}
+  .pl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);margin-bottom:6px}
+  .pl img{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#120a16}
+  .pl b{font-size:.9rem;word-break:break-word}.pl small{display:block;color:var(--muted);font-size:.72rem}
+  .pl .crown{margin-left:auto;font-size:.7rem;font-weight:800;color:#14080f;background:var(--ember);padding:4px 9px;border-radius:8px}
+  .hint{color:var(--muted);font-size:.85rem;line-height:1.5;text-align:center;margin:14px 0}
+  .upl{display:block;text-align:center;padding:15px;border-radius:14px;background:var(--ember);font-weight:800;cursor:pointer;margin-top:12px;box-shadow:0 10px 26px -8px rgba(255,45,135,.65)}
+  .upl input{display:none}
+  .mcard{padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(0,0,0,.25);margin-bottom:12px}
+  .mcard img{width:100%;border-radius:12px;margin:10px 0;border:1px solid var(--line)}
+  .mcard .t{font-weight:800;margin-bottom:4px}
+  .mcard .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mcard .btns button{padding:12px;font-size:.82rem}
+  .stat.wide{grid-column:1/-1}
+
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .seg button{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);box-shadow:none;padding:12px;font-size:.85rem}
+  .seg button.on{background:rgba(255,45,135,.14);border-color:var(--pink);color:#fff}
+  .seg button:hover{filter:none;transform:none}
+  #live-pill{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);display:none;align-items:center;gap:10px;
+    width:auto;max-width:92vw;padding:12px 18px;border-radius:999px;background:#241629;border:1px solid var(--pink);color:#fff;font-size:.85rem;font-weight:800;
+    box-shadow:0 0 28px rgba(255,45,135,.45);text-transform:none;letter-spacing:0;z-index:9}
+  #live-pill.show{display:flex}
+  .livedot{width:10px;height:10px;border-radius:50%;background:var(--pink);animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,45,135,.7)}50%{box-shadow:0 0 0 8px rgba(255,45,135,0)}}
+
+  /* уведомления */
+  #toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,30px);opacity:0;pointer-events:none;
+    max-width:min(92vw,400px);overflow-wrap:anywhere;padding:13px 18px;border-radius:14px;font-size:.88rem;font-weight:700;line-height:1.4;text-align:center;
+    background:#241629;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.6);transition:all .25s;z-index:10}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #toast.ok{border-color:rgba(61,255,168,.5)} #toast.err{border-color:rgba(255,84,112,.55)}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M13.5 0.7s.9 3.4-1.2 6.2C10.7 9 8 10.4 8 14.1c0 2 1 3.6 2.4 4.4-.5-1.6-.1-3.4 1.2-4.7 1.2 1.3 3.4 2.5 3.4 5 0 .4 0 .8-.2 1.2 2.4-1 4.2-3.3 4.2-6.2 0-2.6-1.2-4.7-2.7-6.4-.6 1-1.3 1.6-2 2 .5-3.3-.6-6.7-.8-8.4zM12 24c-3.9 0-7-2.7-7-6.5 0-1.9.8-3.6 2-4.9.1 1.4.8 2.6 1.9 3.3C8.7 18.9 10 21.5 12 24z"/></svg></div>
+      <span>CF <em>HUB</em></span>
+    </div>
+    <button class="chip" onclick="openMyProfile()">
+      <span class="dot"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
+      <span id="account-btn-text">Войти</span>
+    </button>
+  </header>
+
+  <main class="card">
+
+    <!-- ГЛАВНАЯ -->
+    <section id="screen-home" class="screen active">
+      <h1 class="title">Что ищем сегодня?</h1>
+      <p class="sub">Найди игроков, посмотри чужую статистику или привяжи свой профиль.</p>
+      <div class="me" id="me-card" onclick="openMyProfile()">
+        <img id="me-avatar" alt="" src="" onerror="this.onerror=null;this.src='https://counterflame.com/favicon.ico'">
+        <div><div class="n" id="me-nick">…</div><div class="s">Твой профиль</div></div>
+        <div class="lv" id="me-lvl">–</div>
+      </div>
+      <div class="menu">
+        <div class="item" id="item-match" style="display:none" tabindex="0" onclick="openMatch()">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div><div class="t">Мой матч</div><div class="d">Вернуться к текущей игре</div></div>
+          <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+        <div class="item" id="item-admin" style="display:none" tabindex="0" onclick="switchScreen('screen-admin')">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 15l-4-4 1.4-1.4L11 13.2l5.6-5.6L18 9l-7 7z"/></svg></div>
+          <div><div class="t">Модерация</div><div class="d">Проверка матчей и эло</div></div>
+          <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+        <div class="item" tabindex="0" onclick="switchScreen('screen-lobbies')">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v2H6v-2H4v-2h2V9h2v2h3v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+          <div><div class="t">Поиск игры</div><div class="d">Очередь на 10 игроков</div></div>
+          <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+        <div class="item" tabindex="0" onclick="switchScreen('screen-lookup')">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+          <div><div class="t">Поиск профиля</div><div class="d">Статистика по ID игрока</div></div>
+          <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+        <div class="item" tabindex="0" onclick="switchScreen('screen-board')">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg></div>
+          <div><div class="t">Рейтинг</div><div class="d">Лучшие игроки по эло</div></div>
+          <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+        <div class="item" id="item-link" tabindex="0" onclick="switchScreen('screen-link-gen')">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></div>
+          <div><div class="t">Привязать аккаунт</div><div class="d">Подтверждение через игровой ник</div></div>
+          <svg class="go" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПОИСК ИГРЫ -->
+    <section id="screen-lobbies" class="screen">
+      <h1 class="title">Поиск игры</h1>
+      <p class="sub" id="q-sub"></p>
+      <div class="seg"><button id="mode-5v5" onclick="setMode('5v5')">5 на 5</button><button id="mode-1v1" onclick="setMode('1v1')">Дуэль 1 на 1</button></div>
+      <div class="empty"><b id="q-count" style="font-family:var(--display);font-size:1.6rem">0 / 10</b><span id="q-state">Ты не в очереди</span></div>
+      <button id="btn-queue" onclick="toggleQueue()">Найти игру</button>
+      <div id="bot-tools" style="display:none">
+        <div class="team">Для тестов (только модераторы)</div>
+        <div class="row">
+          <button class="ghost" style="margin-top:0" onclick="addBots(false)">Добавить бота</button>
+          <button class="ghost" style="margin-top:0" onclick="addBots(true)">Заполнить ботами</button>
+        </div>
+      </div>
+      <button class="ghost" onclick="switchScreen('screen-home')">Назад</button>
+    </section>
+
+    <!-- ПОИСК ПРОФИЛЯ -->
+    <section id="screen-lookup" class="screen">
+      <h1 class="title">Поиск профиля</h1>
+      <p class="sub">Введи ID игрока, чтобы увидеть его уровень и прогресс.</p>
+      <input id="inp-id" type="number" inputmode="numeric" placeholder="Например, 478693" onkeydown="if(event.key==='Enter')lookupPlayer(this.value)">
+      <div class="recent" id="recent-box"><div class="h">Недавние</div><div class="chips" id="recent-list"></div></div>
+      <button id="btn-search" onclick="lookupPlayer(document.getElementById('inp-id').value)">Найти игрока</button>
+      <button class="ghost" onclick="switchScreen('screen-home')">Назад</button>
+    </section>
+
+    <!-- ПРИВЯЗКА 1 -->
+    <section id="screen-link-gen" class="screen">
+      <div class="steps"><i class="on"></i><i></i></div>
+      <h1 class="title">Привязка профиля</h1>
+      <p class="sub">Шаг 1 из 2. Введи свой ID, и мы выдадим код для ника.</p>
+      <input id="inp-link-id" type="number" inputmode="numeric" placeholder="Твой ID" onkeydown="if(event.key==='Enter')generateVerifyCode()">
+      <button onclick="generateVerifyCode()">Получить код</button>
+      <button class="ghost" onclick="switchScreen('screen-home')">Назад</button>
+    </section>
+
+    <!-- ПРИВЯЗКА 2 -->
+    <section id="screen-link-verify" class="screen">
+      <div class="steps"><i class="on"></i><i class="on"></i></div>
+      <h1 class="title">Подтверждение</h1>
+      <p class="sub">Шаг 2 из 2. Добавь этот код в свой ник в игре, затем нажми «Проверить ник».</p>
+      <div class="code" id="verify-code-container">CF-0000</div>
+      <button id="btn-verify" onclick="verifyAndLink()">Проверить ник</button>
+      <button class="ghost" onclick="switchScreen('screen-home')">Отмена</button>
+    </section>
+
+    <!-- РЕЙТИНГ -->
+    <section id="screen-board" class="screen">
+      <h1 class="title">Рейтинг</h1>
+      <p class="sub">Топ-20 игроков по эло. Тапни по игроку, чтобы открыть профиль.</p>
+      <div id="board-list"></div>
+      <button class="ghost" onclick="switchScreen('screen-home')">Назад</button>
+    </section>
+
+    <!-- МАТЧ -->
+    <section id="screen-match" class="screen">
+      <h1 class="title" id="m-title">Матч</h1>
+      <p class="sub" id="m-status"></p>
+      <div id="m-players"></div>
+      <p class="hint" id="m-hint"></p>
+      <button id="btn-start" style="display:none" onclick="startMatch()">Лобби создано, начать игру</button>
+      <label class="upl" id="m-upload" style="display:none">Загрузить скрин итогов<input type="file" accept="image/*" onchange="uploadShot(this.files[0])"></label>
+      <button class="ghost" onclick="switchScreen('screen-home')">На главную</button>
+    </section>
+
+    <!-- МОДЕРАЦИЯ -->
+    <section id="screen-admin" class="screen">
+      <h1 class="title">Модерация</h1>
+      <p class="sub" id="a-sub">Матчи со скринами на проверке.</p>
+      <div id="a-list"></div>
+      <div class="team">Инструменты</div>
+      <button class="ghost" onclick="clearQueue()">Очистить очередь поиска</button>
+      <div class="team">Активные матчи</div>
+      <div id="a-active"></div>
+      <div id="a-mods" style="display:none">
+        <div class="team">Модераторы</div>
+        <div id="a-mod-list"></div>
+        <input id="inp-mod-id" type="number" inputmode="numeric" placeholder="ID нового модератора" style="margin-top:8px">
+        <button onclick="addMod()">Добавить модератора</button>
+      </div>
+      <button class="ghost" onclick="switchScreen('screen-home')">Назад</button>
+    </section>
+
+    <!-- ЗАГРУЗКА -->
+    <section id="screen-loading" class="screen">
+      <div class="loader"><div class="spin"></div>Загружаем профиль…</div>
+    </section>
+
+    <!-- ПРОФИЛЬ -->
+    <section id="screen-profile" class="screen">
+      <div class="hero">
+        <div class="ring" id="p-ring">
+          <img id="p-avatar" alt="Аватар" src="" onerror="this.onerror=null;this.src='https://counterflame.com/favicon.ico'">
+          <div class="lvl" id="p-level">1</div>
+        </div>
+        <h2 id="p-nick">Nickname</h2>
+        <div class="meta">
+          <span class="tag">ID <span id="p-id"></span></span>
+          <span class="tag ok" id="linked-badge" style="display:none">Твой профиль</span>
+          <span class="tag ok" id="role-badge" style="display:none"></span>
+          <span class="tag" id="league-badge" style="display:none"></span>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat hot">
+          <div class="l"><svg viewBox="0 0 24 24"><path d="M13.5 0.7s.9 3.4-1.2 6.2C10.7 9 8 10.4 8 14.1c0 2 1 3.6 2.4 4.4-.5-1.6-.1-3.4 1.2-4.7 1.2 1.3 3.4 2.5 3.4 5 0 .4 0 .8-.2 1.2 2.4-1 4.2-3.3 4.2-6.2 0-2.6-1.2-4.7-2.7-6.4-.6 1-1.3 1.6-2 2 .5-3.3-.6-6.7-.8-8.4z"/></svg>Wildfire</div>
+          <div class="v" id="p-wildfire">0</div>
+        </div>
+        <div class="stat">
+          <div class="l"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.1 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>Battle Pass</div>
+          <div class="v" id="p-bp">0</div>
+        </div>
+        <div class="stat wide">
+          <div class="l">Эло</div>
+          <div class="v" id="p-elo">–</div>
+        </div>
+      </div>
+      <div id="p-hist"></div>
+      <div class="row">
+        <button class="ghost" onclick="copyLink()">Скопировать ссылку</button>
+        <button class="ghost" onclick="switchScreen('screen-home')">На главную</button>
+      </div>
+      <button class="ghost danger" id="btn-unlink" style="display:none" onclick="unlinkAccount()">Отвязать аккаунт</button>
+    </section>
+
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<button id="live-pill" onclick="openMatch()"><span class="livedot"></span><span id="live-text">Матч идёт</span></button>
+
+<script>
+  const PROXY = 'https://cf-lookup.g446g5pzv6.workers.dev';
+  let tempLinkingId = null;
+  let generatedCode = null;
+  let toastTimer;
+
+  function toast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + (type || '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.className = '', 3200);
+  }
+
+  function switchScreen(id) {
+    const linked = localStorage.getItem('cf_linked_user');
+    if (id === 'screen-link-gen' && linked) return lookupPlayer(linked); // уже привязан
+    if (id === 'screen-home') refreshHome();
+    if (id === 'screen-lookup') renderRecent();
+    if (id === 'screen-lobbies' && curMatch) return openMatch();
+    if (id === 'screen-admin') loadAdmin();
+    if (id === 'screen-board') loadBoard();
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    syncLive();
+  }
+
+  const RANK_COLORS = ['#8c7385','#4caf50','#8bc34a','#cddc39','#ffeb3b','#ffc107','#ff9800','#ff5722','#f44336','#ff2d87'];
+  function rankColor(level) { return RANK_COLORS[Math.min(10, Math.max(1, level)) - 1]; }
+
+  // ====== SUPABASE: впиши свои данные (Project Settings → API) ======
+  const SUPA_URL = 'https://fmsxsuxwcapaukjaicwd.supabase.co';   // https://xxxx.supabase.co
+  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtc3hzdXh3Y2FwYXVramFpY3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDMyODEsImV4cCI6MjEwNzkxOTI4MX0.dEQb-JBtMa0Pz5VcpiQavZ-02t9C5HhyKplz39MN1cg';   // anon public key
+  // ==================================================================
+  const ADMIN_IDS = ['478693'];   // тестовые админы (клиентская часть)
+  const hasDb = () => !!(SUPA_URL && SUPA_KEY);
+  const me = () => localStorage.getItem('cf_linked_user');
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let myRole = 'player', inQueue = false, curMatch = null, qMode = localStorage.getItem('cf_mode') || '5v5';
+  const qNeed = () => qMode === '1v1' ? 2 : 10;
+  const isStaff = () => myRole === 'admin' || myRole === 'mod';
+
+  async function db(path, opt = {}) {
+    const r = await fetch(SUPA_URL + '/rest/v1/' + path, { ...opt, headers: {
+      apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', ...(opt.headers || {}) } });
+    if (!r.ok) { const t = await r.text(); let m = t; try { m = JSON.parse(t).message || t; } catch (_) {}
+      throw new Error(r.status === 404 && /schema cache/.test(m) ? 'Таблицы не созданы: выполни setup.sql в Supabase' : m.slice(0, 160)); }
+    const t = await r.text(); return t ? JSON.parse(t) : null;
+  }
+  const upsert = (table, row) => db(table + '?on_conflict=' + (table === 'players' || table === 'queue' ? 'cf_id' : 'id'),
+    { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(row) });
+
+  async function loadMe() {
+    if (hasDb() && me()) {
+      try { const r = await db('players?cf_id=eq.' + me() + '&select=role'); myRole = r[0] ? r[0].role : 'player'; } catch (e) {}
+    } else myRole = 'player';
+    if (ADMIN_IDS.includes(me())) myRole = 'admin';
+    document.getElementById('bot-tools').style.display = isStaff() ? 'block' : 'none';
+    document.getElementById('item-admin').style.display = isStaff() ? 'flex' : 'none';
+    document.getElementById('item-match').style.display = curMatch ? 'flex' : 'none';
+  }
+
+  // ---- очередь ----
+  function renderQueue(n) {
+    document.getElementById('q-count').textContent = (n === undefined ? 0 : n) + ' / ' + qNeed();
+    document.getElementById('q-state').textContent = inQueue ? (qMode === '1v1' ? 'Ищем соперника…' : 'Ищем игроков…') : 'Ты не в очереди';
+    document.getElementById('btn-queue').textContent = inQueue ? 'Выйти из очереди' : 'Найти игру';
+    document.getElementById('q-sub').textContent = qMode === '1v1'
+      ? 'Найдём соперника, разделим вас по командам и случайно выберем хоста.'
+      : 'Когда наберётся 10 игроков, мы разделим их на две команды и случайно выберем хоста.';
+    ['5v5', '1v1'].forEach(m => document.getElementById('mode-' + m).classList.toggle('on', m === qMode));
+  }
+  async function addBots(fill) {
+    if (!hasDb()) return toast('Сначала подключи Supabase', 'err');
+    try {
+      const cur = await db('queue?mode=eq.' + qMode + '&select=cf_id');
+      const n = fill ? Math.max(0, qNeed() - (inQueue ? 0 : 1) - cur.length) : 1;
+      if (!n) return toast('Очередь уже заполнена', 'err');
+      const rows = Array.from({ length: n }, (_, i) => ({ cf_id: 'bot-' + Math.floor(Math.random() * 1e6), mode: qMode,
+        nick: 'Бот ' + (Math.floor(Math.random() * 900) + 100), avatar: '', joined_at: new Date(Date.now() - (n - i) * 1000).toISOString() }));
+      await db('queue', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(rows) });
+      renderQueue(cur.length + n); toast(n === 1 ? 'Бот добавлен' : `Добавлено ботов: ${n}`, 'ok'); tick();
+    } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  function setMode(m) {
+    if (inQueue) return toast('Сначала выйди из очереди', 'err');
+    qMode = m; localStorage.setItem('cf_mode', m); renderQueue();
+  }
+  function syncLive() {
+    const pill = document.getElementById('live-pill');
+    const show = curMatch && !document.getElementById('screen-match').classList.contains('active');
+    pill.classList.toggle('show', !!show);
+    if (!curMatch) return;
+    const host = curMatch.host_id === me();
+    document.getElementById('live-text').textContent = curMatch.status === 'review' ? 'Скрин на проверке'
+      : host ? (curMatch.status === 'lobby' ? 'Ты хост: создай лобби' : 'Матч идёт: не забудь скрин итогов') : 'Матч идёт';
+  }
+  async function toggleQueue() {
+    if (!hasDb()) return toast('Сначала впиши SUPA_URL и SUPA_KEY в коде', 'err');
+    if (!me()) return toast('Сначала привяжи аккаунт', 'err');
+    try {
+      if (inQueue) { await db('queue?cf_id=eq.' + me(), { method: 'DELETE' }); inQueue = false; }
+      else {
+        const c = JSON.parse(localStorage.getItem('cf_me_cache') || '{}');
+        await upsert('queue', { cf_id: me(), mode: qMode, nick: c.nick || me(), avatar: c.av || '', joined_at: new Date().toISOString() });
+        inQueue = true;
+      }
+      renderQueue(); tick();
+    } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+
+  // ---- опрос раз в 3 сек ----
+  async function tick() {
+    if (!hasDb() || !me() || document.hidden) return;
+    try {
+      const q = encodeURIComponent(JSON.stringify([{ id: me() }]));
+      const a = await db(`matches?status=in.(lobby,playing,review)&players=cs.${q}&order=id.desc&limit=1`);
+      const m = a[0] || null;
+      const onMatch = document.getElementById('screen-match').classList.contains('active');
+      if (m) {
+        const fresh = !curMatch || curMatch.id !== m.id;
+        curMatch = m;
+        if (inQueue) { inQueue = false; renderQueue(); }
+        if (fresh && !onMatch) { openMatch(); toast('Матч найден!', 'ok'); } else if (onMatch) renderMatch();
+      } else {
+        if (curMatch) {
+          const id = curMatch.id; curMatch = null;
+          const r = await db('matches?id=eq.' + id + '&select=status,winner,deltas');
+          if (r[0] && r[0].status === 'done') toast('Матч засчитан. Твоё эло: ' + (v => (v > 0 ? '+' : '') + v)(Number((r[0].deltas || {})[me()] || 0)), 'ok');
+          else if (r[0] && r[0].status === 'cancelled') toast('Матч отменён модератором', 'err');
+          if (onMatch) switchScreen('screen-home');
+        }
+        if (inQueue) {
+          const qq = await db('queue?mode=eq.' + qMode + '&select=cf_id'); renderQueue(qq.length);
+          if (qq.length >= qNeed()) await db('rpc/form_match', { method: 'POST', body: JSON.stringify({ m: qMode }) });
+        }
+      }
+      document.getElementById('item-match').style.display = curMatch ? 'flex' : 'none';
+      syncLive();
+      if (document.getElementById('screen-admin').classList.contains('active')) loadAdmin();
+    } catch (e) {}
+  }
+  setInterval(tick, 3000);
+
+  // ---- матч ----
+  function openMatch() { switchScreen('screen-match'); renderMatch(); }
+  function renderMatch() {
+    const m = curMatch; if (!m) return;
+    const host = m.host_id === me();
+    document.getElementById('m-title').textContent = (m.mode === '1v1' ? 'Дуэль #' : 'Матч #') + m.id;
+    document.getElementById('m-status').textContent = { lobby: 'Хост собирает лобби', playing: 'Идёт игра', review: 'Скрин на проверке' }[m.status];
+    const wrap = document.getElementById('m-players'); wrap.innerHTML = '';
+    ['A', 'B'].forEach(t => {
+      wrap.insertAdjacentHTML('beforeend', `<div class="team">Команда ${t}</div>`);
+      m.players.filter(p => p.team === t).forEach(p => {
+        const d = document.createElement('div'); d.className = 'pl';
+        d.innerHTML = '<img alt=""><div><b></b><small></small></div>';
+        d.querySelector('img').src = p.avatar || 'https://counterflame.com/favicon.ico';
+        d.querySelector('b').textContent = p.nick; d.querySelector('small').textContent = 'ID ' + p.id;
+        if (p.id === m.host_id) d.insertAdjacentHTML('beforeend', '<span class="crown">Хост</span>');
+        wrap.appendChild(d);
+      });
+    });
+    const hint = { lobby: host ? 'Ты хост. Создай лобби в игре, пригласи всех по ID из списка и нажми кнопку ниже.' : 'Хост создаёт лобби и пригласит тебя по ID. Жди приглашения в игре.',
+      playing: host ? 'После игры загрузи скрин с итогами.' : 'Играй. Хост загрузит скрин итогов.', review: 'Модератор проверит скрин и начислит эло.' }[m.status];
+    document.getElementById('m-hint').textContent = hint;
+    document.getElementById('btn-start').style.display = host && m.status === 'lobby' ? 'block' : 'none';
+    document.getElementById('m-upload').style.display = host && m.status === 'playing' ? 'block' : 'none';
+  }
+  async function startMatch() {
+    try { await db(`matches?id=eq.${curMatch.id}&host_id=eq.${me()}`, { method: 'PATCH', body: JSON.stringify({ status: 'playing' }) }); curMatch.status = 'playing'; renderMatch(); }
+    catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  function compress(file) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => { const k = Math.min(1, 1000 / img.width), c = document.createElement('canvas');
+        c.width = img.width * k; c.height = img.height * k; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', .6)); };
+      img.onerror = rej; img.src = URL.createObjectURL(file);
+    });
+  }
+  async function uploadShot(file) {
+    if (!file) return;
+    try {
+      toast('Отправляем скрин…');
+      const shot = await compress(file);
+      await db(`matches?id=eq.${curMatch.id}&host_id=eq.${me()}`, { method: 'PATCH', body: JSON.stringify({ screenshot: shot, status: 'review' }) });
+      curMatch.status = 'review'; renderMatch(); toast('Скрин отправлен на модерацию', 'ok');
+    } catch (e) { toast('Не удалось отправить: ' + e.message, 'err'); }
+  }
+
+  // ---- лиги и рейтинг ----
+  function league(e) { return e < 900 ? ['Бронза', '#cd7f32'] : e < 1100 ? ['Серебро', '#c0c8d4'] : e < 1300 ? ['Золото', '#ffc107'] : e < 1600 ? ['Платина', '#4de1ff'] : ['Легенда', '#ff2d87']; }
+  async function loadBoard() {
+    const box = document.getElementById('board-list');
+    if (!hasDb()) return box.innerHTML = '<p class="hint">Подключи Supabase, чтобы увидеть рейтинг.</p>';
+    try {
+      const r = await db('players?select=cf_id,nick,avatar,elo&nick=not.is.null&order=elo.desc&limit=20');
+      box.innerHTML = r.length ? r.map((x, i) => { const l = league(x.elo);
+        return `<div class="pl" style="cursor:pointer" onclick="lookupPlayer('${esc(x.cf_id)}')"><b style="width:22px;color:var(--muted)">${i + 1}</b>
+          <img alt="" src="${esc(x.avatar || 'https://counterflame.com/favicon.ico')}"><div><b>${esc(x.nick)}</b><small style="color:${l[1]}">${l[0]}</small></div>
+          <b style="margin-left:auto;font-family:var(--display)">${x.elo}</b></div>`; }).join('') : '<p class="hint">Пока никого нет. Привяжи аккаунт, и ты появишься здесь.</p>';
+    } catch (e) { box.innerHTML = '<p class="hint">Не удалось загрузить рейтинг.</p>'; }
+  }
+  async function loadHistory(id) {
+    const box = document.getElementById('p-hist'); box.innerHTML = '';
+    try {
+      const q = encodeURIComponent(JSON.stringify([{ id }]));
+      const h = await db(`matches?status=eq.done&players=cs.${q}&order=id.desc&limit=5&select=id,winner,deltas,players`);
+      if (!h.length) return;
+      box.innerHTML = '<div class="team">Последние матчи</div>' + h.map(m => {
+        const dd = m.deltas ? Number(m.deltas[id] || 0) : (m.players.find(p => p.id === id).team === m.winner ? 25 : -25);
+        return `<div class="pl"><b>Матч #${m.id}</b><b style="margin-left:auto;color:${dd >= 0 ? 'var(--ok)' : 'var(--err)'}">Эло ${dd > 0 ? '+' : dd < 0 ? '−' : ''}${Math.abs(dd)}</b></div>`;
+      }).join('') + '<div style="height:8px"></div>';
+    } catch (e) {}
+  }
+
+  // ---- модерация ----
+  async function clearQueue() {
+    if (!confirm('Выкинуть всех из очереди поиска?')) return;
+    try { await db('queue?cf_id=neq.0', { method: 'DELETE' }); toast('Очередь очищена', 'ok'); } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  async function cancelMatch(id) {
+    if (!confirm('Отменить матч #' + id + '? Эло никому не начислится.')) return;
+    try { await db('matches?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) }); toast('Матч отменён'); loadAdmin(); }
+    catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  async function loadAdmin() {
+    if (!isStaff()) return;
+    try {
+      const list = await db('matches?status=eq.review&order=id.asc');
+      const box = document.getElementById('a-list');
+      document.getElementById('a-sub').textContent = list.length ? `На проверке: ${list.length}. Посмотри скрин и впиши эло каждому игроку.` : 'Очередь проверки пуста.';
+      const sig = list.map(m => m.id + ':' + (m.screenshot || '').length).join('|');
+      if (sig !== lastAdminSig) {   // не перерисовываем, пока модератор вводит числа
+        lastAdminSig = sig;
+        box.innerHTML = list.map(m => {
+          adminMatches[m.id] = m;
+          const img = (m.screenshot || '').startsWith('data:image/') ? `<img src="${esc(m.screenshot)}" alt="Скрин матча">` : '<p class="hint">Скрина нет</p>';
+          const rows = m.players.map((p, i) => `<div class="pl"><div><b>${esc(p.nick)}</b><small>Команда ${p.team} · ID ${esc(p.id)}</small></div>
+            <input type="number" inputmode="numeric" id="d-${m.id}-${i}" value="0" style="width:84px;margin:0 0 0 auto;padding:10px"></div>`).join('');
+          return `<div class="mcard"><div class="t">${m.mode === '1v1' ? 'Дуэль' : 'Матч'} #${m.id}</div>${img}
+            <div class="btns" style="margin-bottom:10px"><button class="ghost" style="margin:0" onclick="presetElo(${m.id},'A')">Победила A: +25 / −25</button>
+            <button class="ghost" style="margin:0" onclick="presetElo(${m.id},'B')">Победила B: +25 / −25</button></div>${rows}
+            <div class="btns" style="margin-top:10px"><button onclick="applyElo(${m.id})">Начислить эло</button>
+            <button class="ghost" style="margin:0" onclick="decide(${m.id},'back')">Вернуть хосту</button></div></div>`;
+        }).join('');
+      }
+      const act = await db('matches?status=in.(lobby,playing)&order=id.asc&select=id,status,host_id');
+      document.getElementById('a-active').innerHTML = act.map(m => `<div class="pl"><b>Матч #${m.id}</b><small>${m.status === 'lobby' ? 'лобби' : 'идёт игра'}, хост ${esc(m.host_id)}</small>
+        <button class="rc danger" style="margin-left:auto" onclick="cancelMatch(${m.id})">Отменить</button></div>`).join('') || '<p class="hint">Активных матчей нет.</p>';
+      document.getElementById('a-mods').style.display = myRole === 'admin' ? 'block' : 'none';
+      if (myRole === 'admin') {
+        const mods = await db('players?role=eq.mod&select=cf_id,nick');
+        document.getElementById('a-mod-list').innerHTML = mods.map(x =>
+          `<div class="pl"><b>${esc(x.nick || x.cf_id)}</b><small>ID ${esc(x.cf_id)}</small><button class="rc danger" style="margin-left:auto" onclick="removeMod('${esc(x.cf_id)}')">Убрать</button></div>`).join('') || '<p class="hint">Модераторов пока нет.</p>';
+      }
+    } catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  let lastAdminSig = null; const adminMatches = {};
+  function presetElo(mid, win) {
+    adminMatches[mid].players.forEach((p, i) => document.getElementById(`d-${mid}-${i}`).value = p.team === win ? 25 : -25);
+  }
+  async function applyElo(mid) {
+    const m = adminMatches[mid], d = {}; let txt = '';
+    m.players.forEach((p, i) => { const v = parseInt(document.getElementById(`d-${mid}-${i}`).value, 10) || 0; d[p.id] = v; txt += `${p.nick}: ${v > 0 ? '+' : ''}${v}\n`; });
+    if (!confirm('Начислить эло?\n\n' + txt)) return;
+    try { await db('rpc/apply_elo', { method: 'POST', body: JSON.stringify({ mid, d, by_id: me() }) }); toast('Эло начислено', 'ok'); lastAdminSig = null; loadAdmin(); }
+    catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  async function decide(id, what) {
+    try { await db('matches?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'playing', screenshot: null }) }); lastAdminSig = null; loadAdmin(); }
+    catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  async function addMod() {
+    const id = document.getElementById('inp-mod-id').value.trim(); if (!id) return toast('Введи ID', 'err');
+    try {
+      let extra = {};
+      try { const j = await (await fetch(`${PROXY}/user/${id}?t=${Date.now()}`)).json(); if (j.success) extra = { nick: j.data.nickname, avatar: avatarUrl(j.data) }; } catch (_) {}
+      await upsert('players', { cf_id: id, role: 'mod', ...extra }); document.getElementById('inp-mod-id').value = ''; toast('Модератор добавлен', 'ok'); loadAdmin(); }
+    catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+  async function removeMod(id) {
+    try { await db('players?cf_id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ role: 'player' }) }); loadAdmin(); }
+    catch (e) { toast('Ошибка: ' + e.message, 'err'); }
+  }
+
+  let currentId = null;
+
+  function refreshHome() {
+    const linked = localStorage.getItem('cf_linked_user');
+    document.getElementById('item-link').style.display = linked ? 'none' : 'flex';
+    loadMe();
+    const card = document.getElementById('me-card');
+    card.classList.toggle('show', !!linked);
+    if (!linked) return;
+    const c = JSON.parse(localStorage.getItem('cf_me_cache') || 'null');
+    if (c && c.id === linked) fillMe(c);
+    fetch(`${PROXY}/user/${linked}?t=${Date.now()}`).then(r => r.json()).then(j => {
+      if (!j.success) return;
+      const d = { id: linked, nick: j.data.nickname, lvl: j.data.wildfireLevel || 1, av: avatarUrl(j.data) };
+      localStorage.setItem('cf_me_cache', JSON.stringify(d));
+      fillMe(d);
+    }).catch(() => {});
+  }
+  function fillMe(d) {
+    document.getElementById('me-nick').textContent = d.nick;
+    document.getElementById('me-lvl').textContent = 'Ур. ' + d.lvl;
+    const img = document.getElementById('me-avatar'); img.src = d.av;
+    document.getElementById('me-card').style.setProperty('--c', rankColor(d.lvl));
+  }
+  function avatarUrl(data) {
+    return data.avatar_url
+      ? (data.avatar_url.startsWith('http') ? data.avatar_url : 'https://counterflame.com' + data.avatar_url)
+      : 'https://counterflame.com/favicon.ico';
+  }
+
+  function saveRecent(id, nick) {
+    let r = JSON.parse(localStorage.getItem('cf_recent') || '[]').filter(x => x.id !== id);
+    r.unshift({ id, nick });
+    localStorage.setItem('cf_recent', JSON.stringify(r.slice(0, 6)));
+  }
+  function renderRecent() {
+    const r = JSON.parse(localStorage.getItem('cf_recent') || '[]');
+    const list = document.getElementById('recent-list');
+    list.innerHTML = '';
+    r.forEach(x => {
+      const b = document.createElement('button');
+      b.className = 'rc'; b.textContent = x.nick || x.id;
+      b.onclick = () => lookupPlayer(x.id);
+      list.appendChild(b);
+    });
+    document.getElementById('recent-box').classList.toggle('show', r.length > 0);
+  }
+
+  function copyLink() {
+    const url = location.origin + location.pathname + '#' + currentId;
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+      .then(() => toast('Ссылка на профиль скопирована', 'ok'))
+      .catch(() => toast(url));
+  }
+
+  function unlinkAccount() {
+    if (!confirm('Отвязать аккаунт от этого устройства?')) return;
+    localStorage.removeItem('cf_linked_user');
+    localStorage.removeItem('cf_me_cache');
+    updateAccountButtonText();
+    toast('Аккаунт отвязан');
+    switchScreen('screen-home');
+  }
+
+  function openMyProfile() {
+    const linked = localStorage.getItem('cf_linked_user');
+    linked ? lookupPlayer(linked) : switchScreen('screen-link-gen');
+  }
+
+  function updateAccountButtonText() {
+    document.getElementById('account-btn-text').textContent =
+      localStorage.getItem('cf_linked_user') ? 'Профиль' : 'Войти';
+  }
+
+  function generateVerifyCode() {
+    const id = document.getElementById('inp-link-id').value.trim();
+    if (!id) return toast('Введи свой ID', 'err');
+    tempLinkingId = id;
+    generatedCode = 'CF-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('verify-code-container').textContent = generatedCode;
+    switchScreen('screen-link-verify');
+  }
+
+  async function verifyAndLink() {
+    const btn = document.getElementById('btn-verify');
+    btn.disabled = true; btn.textContent = 'Проверяем…';
+    try {
+      const res = await fetch(`${PROXY}/user/${tempLinkingId}?t=${Date.now()}`);
+      const json = await res.json();
+      if (!json.success) throw new Error('Игрок не найден');
+      const nickname = json.data.nickname || '';
+      if (nickname.includes(generatedCode)) {
+        localStorage.setItem('cf_linked_user', tempLinkingId);
+        updateAccountButtonText();
+        toast('Профиль привязан', 'ok');
+        lookupPlayer(tempLinkingId);
+      } else {
+        toast(`Кода ${generatedCode} нет в нике «${nickname}». Измени ник в игре и проверь снова.`, 'err');
+      }
+    } catch (e) {
+      toast('Не удалось проверить: ' + (e.message || 'ошибка сети'), 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Проверить ник';
+    }
+  }
+
+  async function lookupPlayer(id) {
+    id = String(id || '').trim();
+    if (!id) return toast('Введи ID игрока', 'err');
+
+    const btn = document.getElementById('btn-search');
+    if (btn) { btn.disabled = true; btn.textContent = 'Ищем…'; }
+    switchScreen('screen-loading');
+
+    try {
+      const res = await fetch(`${PROXY}/user/${id}?t=${Date.now()}`);
+      const json = await res.json();
+      if (!json.success) throw new Error('Игрок не найден');
+      const data = json.data;
+
+      document.getElementById('p-nick').textContent = data.nickname;
+      document.getElementById('p-id').textContent = id;
+      document.getElementById('p-wildfire').textContent = data.wildfireLevel || 0;
+      document.getElementById('p-bp').textContent = data.battlePass ? data.battlePass.level : 0;
+
+      document.getElementById('p-avatar').src = avatarUrl(data);
+      currentId = id;
+      saveRecent(id, data.nickname);
+
+      const lvl = data.wildfireLevel || 1;
+      document.getElementById('p-level').textContent = lvl;
+      const ring = document.getElementById('p-ring');
+      ring.style.setProperty('--c', rankColor(lvl));
+      ring.style.setProperty('--p', Math.min(10, Math.max(1, lvl)) * 10);
+
+      const mine = localStorage.getItem('cf_linked_user') === id;
+      document.getElementById('linked-badge').style.display = mine ? 'inline-block' : 'none';
+      document.getElementById('btn-unlink').style.display = mine ? 'block' : 'none';
+
+      const roleB = document.getElementById('role-badge'); roleB.style.display = 'none';
+      if (ADMIN_IDS.includes(id)) { roleB.textContent = 'Админ'; roleB.style.display = 'inline-block'; }
+      document.getElementById('p-elo').textContent = '–';
+      if (hasDb()) {
+        if (mine) upsert('players', { cf_id: id, nick: data.nickname, avatar: avatarUrl(data) }).catch(() => {});
+        db('players?cf_id=eq.' + id + '&select=elo,role').then(r => {
+          if (!r[0]) return;
+          document.getElementById('p-elo').textContent = r[0].elo;
+          const lg = league(r[0].elo), lb = document.getElementById('league-badge');
+          lb.textContent = lg[0]; lb.style.color = lg[1]; lb.style.borderColor = lg[1]; lb.style.display = 'inline-block';
+          if (r[0].role !== 'player') { roleB.textContent = r[0].role === 'admin' ? 'Админ' : 'Модератор'; roleB.style.display = 'inline-block'; }
+        }).catch(() => {});
+      }
+      document.getElementById('league-badge').style.display = 'none';
+      document.getElementById('p-hist').innerHTML = '';
+      if (hasDb()) loadHistory(id);
+      switchScreen('screen-profile');
+    } catch (e) {
+      toast('Игрок с таким ID не найден', 'err');
+      switchScreen('screen-home');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Найти игрока'; }
+    }
+  }
+
+  window.onload = () => {
+    renderQueue();
+    updateAccountButtonText();
+    if (hasDb() && me()) db('queue?cf_id=eq.' + me()).then(r => { inQueue = r.length > 0; if (r[0] && r[0].mode) qMode = r[0].mode; renderQueue(); tick(); }).catch(() => {});
+    const h = location.hash.slice(1);
+    /^\d+$/.test(h) ? lookupPlayer(h) : switchScreen('screen-home');
+  };
+</script>
+<!-- CF HUB upgrade -->
+<style>
+  /* рамка карточки с тёплым свечением */
+  .card{position:relative}
+  .card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;pointer-events:none;opacity:.8;
+    background:linear-gradient(135deg,rgba(255,45,135,.75),transparent 38%,transparent 62%,rgba(255,138,61,.65));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .beta{font:800 .6rem var(--body);letter-spacing:.12em;padding:3px 7px;border-radius:7px;color:#14080f;background:var(--ember);align-self:center}
+  /* главная: появление пунктов по очереди */
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  #screen-home.active .item,#screen-home.active .me,#screen-home.active .hubstats{animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
+  #screen-home.active .hubstats{animation-delay:.05s}
+  #screen-home.active .menu .item:nth-child(1){animation-delay:.10s}#screen-home.active .menu .item:nth-child(2){animation-delay:.16s}
+  #screen-home.active .menu .item:nth-child(3){animation-delay:.22s}#screen-home.active .menu .item:nth-child(4){animation-delay:.28s}
+  #screen-home.active .menu .item:nth-child(5){animation-delay:.34s}#screen-home.active .menu .item:nth-child(6){animation-delay:.40s}
+  #screen-home .title{background:linear-gradient(90deg,#fff 0%,#ffb3d3 50%,#fff 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
+  @keyframes shine{to{background-position:-200% 0}}
+  /* живая статистика */
+  .hubstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .hubstats div{padding:12px 6px;border-radius:14px;text-align:center;background:rgba(0,0,0,.28);border:1px solid var(--line)}
+  .hubstats b{display:block;font:700 1.35rem var(--display);background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hubstats span{display:block;color:var(--muted);font-size:.7rem;font-weight:700;margin-top:3px}
+  .hubstats .lv::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;animation:pulse 1.4s infinite;vertical-align:middle}
+  /* слоты очереди */
+  .slots{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .slots i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--line);transition:all .3s}
+  .slots i.on{background:var(--ember);border-color:transparent;box-shadow:0 0 14px rgba(255,45,135,.8);animation:pop .4s ease-out}
+  @keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+  /* метка бота */
+  .pl .bot{margin-left:auto;font:800 .65rem var(--body);letter-spacing:.08em;color:var(--orange);border:1px solid rgba(255,138,61,.5);padding:3px 8px;border-radius:8px}
+  .pl .crown+.bot{margin-left:6px}
+  /* экран «матч найден» */
+  .mf{position:fixed;inset:0;z-index:50;display:grid;place-items:center;text-align:center;padding:24px;cursor:pointer;
+    background:radial-gradient(600px 500px at 50% 45%,rgba(255,45,135,.35),rgba(12,7,16,.96) 70%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:mfin .35s ease-out}
+  .mf.out{opacity:0;transition:opacity .4s}
+  @keyframes mfin{from{opacity:0}to{opacity:1}}
+  .mf-k{color:var(--orange);font-weight:800;letter-spacing:.14em;font-size:.8rem;text-transform:uppercase;margin-bottom:12px}
+  .mf-t{font:900 clamp(2rem,10vw,3.2rem)/1.05 var(--display);background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 28px rgba(255,45,135,.7));animation:zoom .6s cubic-bezier(.2,1.4,.3,1) both}
+  @keyframes zoom{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+  .mf-av{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;max-width:340px;margin:26px auto 0}
+  .mf-av img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid var(--pink);background:#120a16;animation:rise .5s both}
+</style>
+<script>
+(function(){
+  /* ---------- боты: смешные имена + SVG-аватарка ---------- */
+  const A=['Дед','Бабка','Тапок','Пельмень','Кот','Хомяк','Борщ','Ниндзя','Сэнсей','Барон','Капитан','Бетон','Шашлык','Дядя','Турбо','Кефир','Огурец','Пингвин','Лось','Сухарик','Батон','Енот','Дворецкий','Профессор'];
+  const B=['Снайпер','Хэдшот','Рашер','Кемпер','Нагибатор','Флеш','Смоук','Клатч','Бустер','Дропер','Тильт','Ультанул','Лудоман','Нубас','Пробив','Эйс','Макаронник','Скуфик'];
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  function botName(){
+    let n=pick(A)+'_'+pick(B),r=Math.random();
+    if(r<.25)n='xX'+n+'Xx'; else if(r<.55)n+=Math.floor(Math.random()*99+1); else if(r<.65)n+='228';
+    return n;
+  }
+  function botAvatar(){
+    const h=Math.floor(Math.random()*360),c=`hsl(${h},85%,62%)`,d=`hsl(${h},70%,42%)`;
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="hsl(${h},55%,16%)"/><path d="M32 9v8" stroke="${c}" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="7" r="3.2" fill="${c}"/><rect x="9" y="27" width="5" height="12" rx="2.5" fill="${d}"/><rect x="50" y="27" width="5" height="12" rx="2.5" fill="${d}"/><rect x="14" y="17" width="36" height="30" rx="9" fill="${c}"/><circle cx="24" cy="31" r="5.2" fill="#0c0710"/><circle cx="40" cy="31" r="5.2" fill="#0c0710"/><circle cx="25.6" cy="29.4" r="1.8" fill="#fff"/><circle cx="41.6" cy="29.4" r="1.8" fill="#fff"/><rect x="23" y="39" width="18" height="3.6" rx="1.8" fill="#0c0710" opacity=".75"/><rect x="20" y="50" width="24" height="9" rx="4" fill="${d}"/></svg>`;
+    return 'data:image/svg+xml,'+encodeURIComponent(svg);
+  }
+  addBots=async function(fill){
+    if(!hasDb())return toast('Сначала подключи Supabase','err');
+    try{
+      const cur=await db('queue?mode=eq.'+qMode+'&select=cf_id');
+      const n=fill?Math.max(0,qNeed()-(inQueue?0:1)-cur.length):1;
+      if(!n)return toast('Очередь уже заполнена','err');
+      const used=new Set(),rows=Array.from({length:n},(_,i)=>{let nk;do{nk=botName()}while(used.has(nk));used.add(nk);
+        return{cf_id:'bot-'+Math.floor(Math.random()*1e6),mode:qMode,nick:nk,avatar:botAvatar(),joined_at:new Date(Date.now()-(n-i)*1000).toISOString()}});
+      await db('queue',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(rows)});
+      renderQueue(cur.length+n);toast(n===1?rows[0].nick+' зашёл в очередь':'Добавлено ботов: '+n,'ok');tick();
+    }catch(e){toast('Ошибка: '+e.message,'err')}
+  };
+
+  /* ---------- слоты очереди ---------- */
+  const _rq=renderQueue;
+  renderQueue=function(n){
+    _rq(n);
+    let s=document.getElementById('q-slots');
+    if(!s){s=document.createElement('div');s.id='q-slots';s.className='slots';document.querySelector('#screen-lobbies .empty').appendChild(s)}
+    const c=n===undefined?0:n;
+    s.innerHTML=Array.from({length:qNeed()},(_,i)=>`<i class="${i<c?'on':''}"></i>`).join('');
+  };
+
+  /* ---------- экран «матч найден» + метка БОТ ---------- */
+  let seen=null;
+  function matchFound(m){
+    const o=document.createElement('div');o.className='mf';
+    const av=m.players.slice(0,10).map((p,i)=>`<img alt="" style="animation-delay:${.15+i*.06}s" src="${esc(p.avatar||'https://counterflame.com/favicon.ico')}">`).join('');
+    o.innerHTML=`<div><div class="mf-k">${m.mode==='1v1'?'Дуэль':'Матч'} #${m.id} · ${m.players.length} игроков</div><div class="mf-t">МАТЧ<br>НАЙДЕН</div><div class="mf-av">${av}</div></div>`;
+    o.onclick=()=>o.remove();document.body.appendChild(o);
+    setTimeout(()=>{o.classList.add('out');setTimeout(()=>o.remove(),400)},2800);
+    try{navigator.vibrate&&navigator.vibrate([80,40,80])}catch(e){}
+  }
+  const _rm=renderMatch;
+  renderMatch=function(){
+    _rm();
+    if(curMatch&&seen!==curMatch.id){seen=curMatch.id;if(curMatch.status==='lobby')matchFound(curMatch)}
+    document.querySelectorAll('#m-players .pl').forEach(d=>{const s=d.querySelector('small');
+      if(s&&/ID bot-/.test(s.textContent)&&!d.querySelector('.bot'))d.insertAdjacentHTML('beforeend','<span class="bot">БОТ</span>')});
+  };
+
+  /* ---------- главная: BETA, живая статистика ---------- */
+  document.querySelector('.brand span').insertAdjacentHTML('afterend','<small class="beta">BETA</small>');
+  document.querySelector('#screen-home .sub').insertAdjacentHTML('afterend',
+    '<div class="hubstats"><div><b id="hs-q">0</b><span class="lv">в поиске</span></div><div><b id="hs-m">0</b><span>матчей сыграно</span></div><div><b id="hs-p">0</b><span>игроков</span></div></div>');
+  function countUp(id,to){
+    const el=document.getElementById(id),from=+el.textContent||0,t0=performance.now();
+    if(from===to)return;
+    (function f(t){const k=Math.min(1,(t-t0)/700);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})(t0);
+  }
+  async function hubStats(){
+    if(!hasDb())return;
+    try{
+      const [q,m,p]=await Promise.all([db('queue?select=cf_id'),db('matches?status=eq.done&select=id'),db('players?nick=not.is.null&select=cf_id')]);
+      countUp('hs-q',q.length);countUp('hs-m',m.length);countUp('hs-p',p.length);
+    }catch(e){}
+  }
+  const _rh=refreshHome;
+  refreshHome=function(){_rh();hubStats()};
+  setInterval(()=>{if(document.getElementById('screen-home').classList.contains('active')&&!document.hidden)hubStats()},8000);
+  hubStats();
+})();
+</script>
+</body>
+</html>
