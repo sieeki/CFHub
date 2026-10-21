@@ -48,6 +48,14 @@
   .chip:hover{border-color:var(--line-hot);background:var(--panel)}
   .chip .dot{width:22px;height:22px;border-radius:50%;background:var(--ember);display:grid;place-items:center}
   .chip .dot svg{width:12px;height:12px;fill:#fff}
+  .chip.lang{padding:8px 11px;gap:6px;font-size:.72rem;font-weight:800;letter-spacing:.04em}
+  .chip.lang svg{width:15px;height:15px;fill:none;stroke:var(--pink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .top-right{display:flex;align-items:center;gap:8px}
+  .chip.back{display:none;padding:0;width:36px;height:36px;justify-content:center;flex:none}
+  .chip.back svg{width:18px;height:18px;fill:none;stroke:var(--text);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .chip.back:hover svg{stroke:var(--pink)}
+  .top-left{display:flex;align-items:center;gap:10px;min-width:0}
+  .top-left.has-back .brand>span{display:none}
 
   /* карточка */
   .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;
@@ -252,14 +260,25 @@
 <div class="shell">
 
   <header class="top">
-    <div class="brand">
-      <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M13.5 0.7s.9 3.4-1.2 6.2C10.7 9 8 10.4 8 14.1c0 2 1 3.6 2.4 4.4-.5-1.6-.1-3.4 1.2-4.7 1.2 1.3 3.4 2.5 3.4 5 0 .4 0 .8-.2 1.2 2.4-1 4.2-3.3 4.2-6.2 0-2.6-1.2-4.7-2.7-6.4-.6 1-1.3 1.6-2 2 .5-3.3-.6-6.7-.8-8.4zM12 24c-3.9 0-7-2.7-7-6.5 0-1.9.8-3.6 2-4.9.1 1.4.8 2.6 1.9 3.3C8.7 18.9 10 21.5 12 24z"/></svg></div>
-      <span>CF <em>HUB</em></span>
+    <div class="top-left">
+      <button class="chip back" id="back-btn" onclick="goBack()" aria-label="Back">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="brand">
+        <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M13.5 0.7s.9 3.4-1.2 6.2C10.7 9 8 10.4 8 14.1c0 2 1 3.6 2.4 4.4-.5-1.6-.1-3.4 1.2-4.7 1.2 1.3 3.4 2.5 3.4 5 0 .4 0 .8-.2 1.2 2.4-1 4.2-3.3 4.2-6.2 0-2.6-1.2-4.7-2.7-6.4-.6 1-1.3 1.6-2 2 .5-3.3-.6-6.7-.8-8.4zM12 24c-3.9 0-7-2.7-7-6.5 0-1.9.8-3.6 2-4.9.1 1.4.8 2.6 1.9 3.3C8.7 18.9 10 21.5 12 24z"/></svg></div>
+        <span>CF <em>HUB</em></span>
+      </div>
     </div>
-    <button class="chip" onclick="openMyProfile()">
-      <span class="dot"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
-      <span id="account-btn-text">Войти</span>
-    </button>
+    <div class="top-right">
+      <button class="chip lang" id="lang-toggle" onclick="toggleLang()" aria-label="Language / Язык">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>
+        <span id="lang-code">RU</span>
+      </button>
+  <button class="chip" onclick="openMyProfile()">
+        <span class="dot"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
+        <span id="account-btn-text">Войти</span>
+      </button>
+    </div>
   </header>
 
 
@@ -532,7 +551,7 @@
       </div>
 
       <div class="row">
-        <button class="ghost" onclick="copyLink()">Скопировать ссылку</button>
+        <button class="ghost" onclick="copyId()">Скопировать ID</button>
         <button class="ghost" onclick="switchScreen('screen-home')">На главную</button>
       </div>
       <button class="ghost danger" id="btn-unlink" style="display:none" onclick="unlinkAccount()">Отвязать аккаунт</button>
@@ -575,7 +594,15 @@
     if (id === 'screen-board') loadBoard();
     document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    const bb = document.getElementById('back-btn');
+    if (bb) { bb.style.display = id === 'screen-home' ? 'none' : 'flex'; bb.parentElement.classList.toggle('has-back', id !== 'screen-home'); }
+    window.scrollTo(0, 0);
     syncLive();
+  }
+
+  function goBack() {
+    haptic('light');
+    switchScreen('screen-home');
   }
 
   const RANK_COLORS = ['#8c7385','#4caf50','#8bc34a','#cddc39','#ffeb3b','#ffc107','#ff9800','#ff5722','#f44336','#ff2d87'];
@@ -1110,11 +1137,11 @@
     document.getElementById('recent-box').classList.toggle('show', r.length > 0);
   }
 
-  function copyLink() {
-    const url = location.origin + location.pathname + '#' + currentId;
-    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
-      .then(() => toast('Ссылка на профиль скопирована', 'ok'))
-      .catch(() => toast(url));
+  function copyId() {
+    const id = String(currentId);
+    (navigator.clipboard ? navigator.clipboard.writeText(id) : Promise.reject())
+      .then(() => toast(t('id_copied'), 'ok'))
+      .catch(() => toast(id));
   }
 
   function unlinkAccount() {
@@ -1463,7 +1490,7 @@
       match_start: 'Начать игру', match_upload: 'Загрузить скрин итогов',
       admin_title: 'Модерация', admin_sub: 'Матчи со скринами на проверке.',
       loading: 'Загружаем профиль…',
-      copy_link: 'Скопировать ссылку', unlink: 'Отвязать аккаунт',
+      copy_id: 'Скопировать ID', id_copied: 'ID скопирован', unlink: 'Отвязать аккаунт',
       matches_played: 'Сыграно матчей:',
       in_search: 'в поиске', players: 'игроков',
       your_profile: 'Твой профиль',
@@ -1528,7 +1555,7 @@
       match_start: 'Start game', match_upload: 'Upload results screenshot',
       admin_title: 'Moderation', admin_sub: 'Matches with screenshots pending review.',
       loading: 'Loading profile…',
-      copy_link: 'Copy link', unlink: 'Unlink account',
+      copy_id: 'Copy ID', id_copied: 'ID copied', unlink: 'Unlink account',
       matches_played: 'Matches played:',
       in_search: 'in queue', players: 'players',
       your_profile: 'Your profile',
@@ -1578,8 +1605,14 @@
     haptic('light');
   }
 
+  function toggleLang() {
+    setLang(lang === 'en' ? 'ru' : 'en');
+  }
+
   function applyLang() {
     if (!lang) return;
+    document.documentElement.lang = lang;
+    const lc = document.getElementById('lang-code'); if (lc) lc.textContent = lang.toUpperCase();
     const L = I18N[lang] || I18N.ru;
     const q = (sel) => document.querySelector(sel);
     const set = (sel, text) => { const el = q(sel); if (el) el.textContent = text; };
@@ -1671,7 +1704,7 @@
       if (tx === 'Назад' || tx === 'Back') b.textContent = L.back;
       if (tx === 'На главную' || tx === 'Home') b.textContent = L.home;
       if (tx === 'Отмена' || tx === 'Cancel') b.textContent = L.cancel;
-      if (tx === 'Скопировать ссылку' || tx === 'Copy link') b.textContent = L.copy_link;
+      if (tx === 'Скопировать ID' || tx === 'Copy ID') b.textContent = L.copy_id;
     });
     // menu items hard map by current Russian/English
     document.querySelectorAll('#screen-home .menu .item').forEach(it => {
@@ -2067,6 +2100,272 @@
   window.loadAdminUsers = loadAdminUsers;
   window.loadTesterMenu = loadTesterMenu;
 })();
+</script>
+<script>
+/* ===================== FULL RU → EN AUTO-TRANSLATION ===================== */
+(function () {
+  const CYR = /[А-Яа-яЁё]/;
+  const EXACT = {
+    // header / home
+    'Войти':'Log in','Профиль':'Profile','Твой профиль':'Your profile',
+    'Что ищем сегодня?':'What are we looking for?',
+    'Найди игроков, посмотри чужую статистику или привяжи свой профиль.':'Find players, check stats, or link your account.',
+    'Мой матч':'My match','Вернуться к текущей игре':'Return to current game',
+    'Модерация':'Moderation','Проверка матчей и эло':'Review matches and elo',
+    'Меню тестеров':'Testers menu','Новости и информация для тестировщиков':'News and info for testers',
+    'Поиск игры':'Find game','Поиск профиля':'Find profile','Статистика по ID игрока':'Stats by player ID',
+    'Рейтинг':'Leaderboard','Лучшие игроки по эло':'Top players by elo',
+    'Привязать аккаунт':'Link account','Подтверждение через игровой ник':'Confirm via in-game nick',
+    'Сыграно матчей:':'Matches played:','в поиске':'in queue','игроков':'players',
+    // queue
+    '5 на 5':'5 vs 5','2 на 2':'2 vs 2','1 на 1':'1 vs 1','Ты не в очереди':'Not in queue',
+    'Найти игру':'Find game','Выйти из очереди':'Leave queue',
+    'Для тестов (только модераторы)':'For testing (moderators only)',
+    'Добавить бота':'Add bot','Заполнить ботами':'Fill with bots','В очереди':'In queue',
+    'Назад':'Back','На главную':'Home','Отмена':'Cancel','Отменить':'Cancel',
+    'Найдём соперника, разделим вас по командам и случайно выберем хоста.':'We’ll find an opponent, split you into teams and pick a host at random.',
+    'Когда наберётся 4 игрока, мы разделим их на две команды по 2 и выберем хоста.':'Once 4 players are in, we’ll split them into two teams of 2 and pick a host.',
+    'Когда наберётся 10 игроков, мы разделим их на две команды и случайно выберем хоста.':'Once 10 players are in, we’ll split them into two teams and pick a host at random.',
+    // lookup / link
+    'Введи ID игрока, чтобы увидеть его уровень и прогресс.':'Enter player ID to see level and progress.',
+    'Например, 478693':'e.g. 478693','Недавние':'Recent','Найти игрока':'Find player',
+    'Привязка профиля':'Link profile','Шаг 1 из 2. Введи свой ID, и мы выдадим код для ника.':'Step 1 of 2. Enter your ID to get a nick code.',
+    'Твой ID':'Your ID','Получить код':'Get code','Подтверждение':'Confirm',
+    'Шаг 2 из 2. Добавь этот код в свой ник в игре, затем нажми «Проверить ник».':'Step 2 of 2. Add this code to your in-game nick, then tap “Verify nick”.',
+    'Проверить ник':'Verify nick',
+    'Топ-20 игроков по эло. Тапни по игроку, чтобы открыть профиль.':'Top-20 by elo. Tap a player to open profile.',
+    // match
+    'Матч':'Match','Дуэль':'Duel','Код доступа к лобби':'Lobby access code','Введи код из игры':'Enter code from the game',
+    'Отправить код всем':'Send code to everyone','Обновить код':'Update code',
+    'Настройки лобби в игре:':'In-game lobby settings:','• Раунды:':'• Rounds:','• Включи галочку':'• Enable',
+    '«Не начинать матч, пока не соберётся состав»':'“Don’t start the match until the roster is full”',
+    'Важно:':'Important:','заходи':'join','строго в свою команду':'strictly your own team',
+    '(A или B), как указано выше. Чужой слот = предупреждение, при повторе — блокировка.':'(T or CT) as shown above. Wrong side = warning, repeat = ban.',
+    'Начать игру':'Start game','Загрузить скрин итогов':'Upload results screenshot',
+    'Пожаловаться на игрока':'Report a player','Жалоба':'Report',
+    'Зашёл не в свою команду':'Joined the wrong team','АФК / не играет':'AFK / not playing',
+    'Токсичность / оскорбления':'Toxicity / insults','Подозрение в читах':'Suspected cheating',
+    'Сливает игру':'Throwing the game','Другое':'Other',
+    'Комментарий (необязательно)':'Comment (optional)','Отправить жалобу':'Submit report',
+    'Нажми, чтобы открыть':'Tap to open','МАТЧ':'MATCH','НАЙДЕН':'FOUND','БОТ':'BOT',
+    'Матч идёт':'Match in progress','Скрин на проверке':'Screenshot under review',
+    'Ты хост: создай лобби':'You’re the host: create the lobby',
+    'Матч идёт: не забудь скрин итогов':'Match in progress: don’t forget the results screenshot',
+    'Нет игроков для жалобы':'No players to report','Скрина нет':'No screenshot','Скрин матча':'Match screenshot','Аватар':'Avatar',
+    // admin
+    'Матчи со скринами на проверке.':'Matches with screenshots pending review.',
+    'Пользователи и бейджи':'Users and badges','Обновить список пользователей':'Refresh user list',
+    'Нажми «Обновить список пользователей».':'Tap “Refresh user list”.',
+    'Жалобы':'Reports','Инструменты':'Tools','Очистить очередь поиска':'Clear search queue',
+    'Активные матчи':'Active matches','Модераторы':'Moderators','ID нового модератора':'New moderator ID',
+    'Добавить модератора':'Add moderator','Очередь проверки пуста.':'Review queue is empty.',
+    'Начислить эло':'Award elo','Вернуть хосту':'Return to host',
+    '+ Варн':'+ Warn','− Варн':'− Warn','Убрать':'Remove',
+    'Жалоб пока нет.':'No reports yet.','Таблица reports не создана или ошибка загрузки.':'The reports table doesn’t exist or failed to load.',
+    'Активных матчей нет.':'No active matches.','Модераторов пока нет.':'No moderators yet.',
+    'Последние матчи':'Recent matches',
+    // testers
+    'Закрытый раздел для участников тестирования CF HUB.':'Private section for CF HUB testers.',
+    'Добро пожаловать в команду тестировщиков!':'Welcome to the testers team!',
+    'Здесь будут появляться новости тестирования, ранние функции и задания для проверки.':'Testing news, early features and tasks to check will appear here.',
+    'Чек-лист тестирования':'Testing checklist',
+    'Встать в очередь в «Поиске игры» и выйти из неё':'Join the queue in “Find game” and leave it',
+    'Сыграть тестовую дуэль 1 на 1':'Play a test 1v1 duel',
+    'Найти профиль другого игрока по ID':'Look up another player’s profile by ID',
+    'Открыть рейтинг и проверить бейджи у игроков':'Open the leaderboard and check player badges',
+    'Отправить тестовую жалобу из матча':'Send a test report from a match',
+    'Переключить язык и проверить, что всё переведено':'Switch the language and check that everything is translated',
+    'Время авторизоваться и стать тестером':'Time to sign in and become a tester',
+    'Бейдж выдаётся автоматически':'The badge is awarded automatically',
+    'Привяжи аккаунт — получишь бейдж':'Link your account to get the badge',
+    'Статус доступа':'Access status','Бейдж тестировщика подтверждён. Доступ к разделу активен.':'Tester badge confirmed. Access to this section is active.',
+    'Нашёл баг?':'Found a bug?','Скопируй шаблон, заполни и отправь команде.':'Copy the template, fill it in and send it to the team.',
+    'Скопировать шаблон баг-репорта':'Copy bug report template','Тестировщики':'Testers',
+    'Загружаем…':'Loading…','Пока никого.':'Nobody yet.','Загружаем пользователей…':'Loading users…',
+    'Пользователей пока нет.':'No users yet.','Без бейджей':'No badges','Без ника':'No nick',
+    'Привяжи аккаунт, чтобы проверить доступ.':'Link your account to check access.',
+    'Этот раздел доступен только игрокам с бейджем тестировщика.':'This section is only available to players with the tester badge.',
+    // profile
+    'Загружаем профиль…':'Loading profile…','Эло':'Elo','Админ-панель':'Admin panel','Эло игрока':'Player elo',
+    'Новое эло':'New elo','Установить':'Set','Управление':'Management','Бейджи':'Badges',
+    'Скопировать ID':'Copy ID','Отвязать аккаунт':'Unlink account',
+    'Админ':'Admin','Забанен':'Banned','Модератор':'Moderator','Разбанить':'Unban','Забанить':'Ban',
+    'Снять модера':'Remove moderator','Сделать модером':'Make moderator',
+    // leagues
+    'Бронза':'Bronze','Серебро':'Silver','Золото':'Gold','Платина':'Platinum','Легенда':'Legend',
+    // badges
+    'Команда CFHub':'CFHub Team','Верифицированный':'Verified','Подтверждённый':'Confirmed',
+    'Тестировщик':'Tester','Тиктокер':'TikToker','Премиум':'Premium',
+    // misc
+    'Проверяем…':'Verifying…','Ищем…':'Searching…','ошибка сети':'network error','Игрок не найден':'Player not found',
+    'Нет прав на выдачу бейджа тестера':'No permission to grant the tester badge',
+    'нет прав на выдачу бейджа тестера':'no permission to grant the tester badge',
+    'Таблицы не созданы: выполни setup.sql в Supabase':'Tables not created: run setup.sql in Supabase',
+    // toasts / confirms
+    'Сначала подключи Supabase':'Connect Supabase first','Очередь уже заполнена':'The queue is already full',
+    'Бот добавлен':'Bot added','Сначала выйди из очереди':'Leave the queue first',
+    'Сначала впиши SUPA_URL и SUPA_KEY в коде':'Set SUPA_URL and SUPA_KEY in the code first',
+    'Сначала привяжи аккаунт':'Link your account first','Ты забанен и не можешь вставать в очередь':'You’re banned and can’t join the queue',
+    'Матч найден!':'Match found!','Матч отменён модератором':'Match cancelled by a moderator',
+    'Выбери игрока':'Select a player','Жалоба отправлена':'Report sent','Введи код лобби из игры':'Enter the lobby code from the game',
+    'Код отправлен всем игрокам':'Code sent to all players','Сначала отправь код лобби':'Send the lobby code first',
+    'Игра началась':'Game started','Отправляем скрин…':'Sending screenshot…','Скрин отправлен на модерацию':'Screenshot sent for review',
+    'Подключи Supabase, чтобы увидеть рейтинг.':'Connect Supabase to see the leaderboard.',
+    'Пока никого нет. Привяжи аккаунт, и ты появишься здесь.':'Nobody here yet. Link your account and you’ll appear here.',
+    'Не удалось загрузить рейтинг.':'Failed to load the leaderboard.',
+    'Выкинуть всех из очереди поиска?':'Remove everyone from the search queue?','Очередь очищена':'Queue cleared',
+    'Матч отменён':'Match cancelled','Эло начислено':'Elo awarded','Модератор добавлен':'Moderator added','Введи ID':'Enter an ID',
+    'Отвязать аккаунт от этого устройства?':'Unlink the account from this device?','Аккаунт отвязан':'Account unlinked',
+    'Введи свой ID':'Enter your ID','Профиль успешно привязан!':'Profile linked successfully!','Введи ID игрока':'Enter a player ID',
+    'Игрок с таким ID не найден':'No player with that ID found',
+    'Только админ может выдавать бейджи':'Only an admin can award badges','Введи число':'Enter a number',
+    'Забанить игрока? Он не сможет вставать в очередь.':'Ban this player? They won’t be able to join the queue.',
+    'Разбанить игрока?':'Unban this player?','Игрок забанен':'Player banned','Игрок разбанен':'Player unbanned',
+    'Назначен модератором':'Made a moderator','Модератор снят':'Moderator removed',
+    'Тебе выдан бейдж тестера!':'You’ve been given the tester badge!',
+    'Шаблон баг-репорта скопирован':'Bug report template copied','Не удалось скопировать':'Failed to copy',
+    'Начислить эло?':'Award elo?'
+  };
+  // bot nicknames
+  const BOT = {'Дед':'Grandpa','Бабка':'Granny','Тапок':'Slipper','Пельмень':'Dumpling','Кот':'Cat','Хомяк':'Hamster','Борщ':'Borscht','Ниндзя':'Ninja','Сэнсей':'Sensei','Барон':'Baron','Капитан':'Captain','Бетон':'Concrete','Шашлык':'Kebab','Дядя':'Uncle','Турбо':'Turbo','Кефир':'Kefir','Огурец':'Pickle','Пингвин':'Penguin','Лось':'Moose','Сухарик':'Rusk','Батон':'Loaf','Енот':'Raccoon','Дворецкий':'Butler','Профессор':'Professor','Снайпер':'Sniper','Хэдшот':'Headshot','Рашер':'Rusher','Кемпер':'Camper','Нагибатор':'Pwner','Флеш':'Flash','Смоук':'Smoke','Клатч':'Clutch','Бустер':'Booster','Дропер':'Dropper','Тильт':'Tilt','Ультанул':'Ulted','Лудоман':'Gambler','Нубас':'Noobas','Пробив':'Breakthrough','Эйс':'Ace','Макаронник':'Pastaman','Скуфик':'Skufik'};
+  const BOTRE = /([А-Яа-яЁё]+)_([А-Яа-яЁё]+)/g;
+  const modeW = w => w === 'Дуэль' ? 'Duel' : w === 'Матч' ? 'Match' : w;
+  const P = [
+    [/^Ошибка: ([\s\S]*)$/, m => 'Error: ' + tr(m[1])],
+    [/^Не удалось отправить: ([\s\S]*)$/, m => 'Failed to send: ' + tr(m[1])],
+    [/^Не удалось сохранить код: ([\s\S]*)$/, m => 'Failed to save code: ' + tr(m[1])],
+    [/^Не удалось проверить: ([\s\S]*)$/, m => 'Verification failed: ' + tr(m[1])],
+    [/^Не удалось проверить доступ: ([\s\S]*)$/, m => 'Failed to check access: ' + tr(m[1])],
+    [/^Не удалось загрузить список: ([\s\S]*)$/, m => 'Failed to load the list: ' + tr(m[1])],
+    [/^Бот (\d+)$/, m => 'Bot ' + m[1]],
+    [/^Добавлено ботов: (\d+)$/, m => 'Bots added: ' + m[1]],
+    [/^(.+) зашёл в очередь$/, m => m[1] + ' joined the queue'],
+    [/^Матч засчитан\. Твоё эло: ([+\-−]?\d+)$/, m => 'Match counted. Your elo: ' + m[1]],
+    [/^(Дуэль|Матч) #(\d+)$/, m => modeW(m[1]) + ' #' + m[2]],
+    [/^2×2 #(\d+)$/, m => '2×2 #' + m[1]],
+    [/^(Дуэль|2×2|Матч) #(\d+) · (\d+) игроков$/, m => modeW(m[1]) + ' #' + m[2] + ' · ' + m[3] + ' players'],
+    [/^Эло ([+\-−]?\d+)$/, m => 'Elo ' + m[1]],
+    [/^Ур\. (\d+)$/, m => 'Lv. ' + m[1]],
+    [/^Варны: (\d+)$/, m => 'Warns: ' + m[1]],
+    [/^\+ Варн \((\d+)\)$/, m => '+ Warn (' + m[1] + ')'],
+    [/^Варн выдан \((\d+)\)$/, m => 'Warn given (' + m[1] + ')'],
+    [/^Варн снят \((\d+)\)$/, m => 'Warn removed (' + m[1] + ')'],
+    [/^Эло установлено: (\d+)$/, m => 'Elo set: ' + m[1]],
+    [/^Отменить матч #(\d+)\? Эло никому не начислится\.$/, m => 'Cancel match #' + m[1] + '? No one will receive elo.'],
+    [/^На проверке: (\d+)\. Посмотри скрин и впиши эло каждому игроку\.$/, m => 'Pending review: ' + m[1] + '. Check the screenshot and enter elo for each player.'],
+    [/^от (.+?) · матч #(.+?) · (.*?)( — [\s\S]*)?$/, m => 'from ' + m[1] + ' · match #' + m[2] + ' · ' + tr(m[3]) + (m[4] || '')],
+    [/^(лобби|идёт игра), хост (.+)$/, m => (m[1] === 'лобби' ? 'lobby' : 'game in progress') + ', host ' + m[2]],
+    [/^Кода (.+) нет в нике «(.*)»\. Измени ник в игре и проверь снова\.$/, m => 'The code ' + m[1] + ' isn’t in the nick “' + m[2] + '”. Change your nick in the game and check again.'],
+    [/^(Выдан|Снят): (.+)$/, m => (m[1] === 'Выдан' ? 'Granted: ' : 'Removed: ') + tr(m[2])],
+    [/^Выполнено (\d+) из (\d+)$/, m => 'Completed ' + m[1] + ' of ' + m[2]],
+    [/^Всего: (\d+)$/, m => 'Total: ' + m[1]],
+    [/^(\d+)д (\d{2}:\d{2}:\d{2})$/, m => m[1] + 'd ' + m[2]],
+    [/^Бейдж тестера сейчас выдаётся всем, кто заходит под аккаунтом — ещё (\d+) дн\.$/, m => 'The tester badge is currently given to everyone who signs in — ' + m[1] + ' more day(s).'],
+    [/^Начислить эло\?\n\n([\s\S]*)$/, m => 'Award elo?\n\n' + tr(m[1])]
+  ];
+  const MULTI = [['Баг в CF HUB','Bug in CF HUB'],['Где:','Where:'],['Шаги:','Steps:'],['Ожидал:','Expected:'],['Получил:','Actual:'],['Мой ID:','My ID:'],['Устройство:','Device:']];
+
+  function norm(s) { return s.replace(/\s+/g, ' ').trim(); }
+  function tr(s) {
+    if (typeof s !== 'string' || !CYR.test(s)) return s;
+    if (s.indexOf('Баг в CF HUB') === 0) { let o = s; MULTI.forEach(([a, b]) => o = o.split(a).join(b)); return o; }
+    const key = s.trim();
+    if (EXACT[key]) return EXACT[key];
+    const nk = norm(s);
+    if (EXACT[nk]) return EXACT[nk];
+    for (const [re, fn] of P) { const m = key.match(re); if (m) return fn(m); }
+    // "✓ Тестировщик", "+ Варн", "• Что-то" — символ в начале + перевод остатка
+    const pm = key.match(/^([✓✔✗×+\-–—•·*]+\s*)([\s\S]+)$/);
+    if (pm && CYR.test(pm[2])) { const r2 = tr(pm[2]); if (r2 !== pm[2]) return pm[1] + r2; }
+    // части через « · »
+    if (key.indexOf(' · ') > -1) { const parts = key.split(' · '), tp = parts.map(tr); if (tp.join('|') !== parts.join('|')) return tp.join(' · '); }
+    let out = s.replace(BOTRE, (all, a, b) => (BOT[a] && BOT[b]) ? BOT[a] + '_' + BOT[b] : all);
+    if (out !== s && !CYR.test(out.replace(/[А-Яа-яЁё]+_[А-Яа-яЁё]+/g, ''))) return out;
+    if (s.indexOf('\n') > -1) return s.split('\n').map(tr).join('\n');
+    return out;
+  }
+  window.trEN = tr;
+  const isEN = () => typeof lang !== 'undefined' && lang === 'en';
+
+  /* ---- DOM walker ---- */
+  const tnodes = new WeakMap(), attrs = new WeakMap();
+  const ATTRS = ['placeholder', 'alt', 'title', 'aria-label'];
+  function procText(n) {
+    const v = n.nodeValue, rec = tnodes.get(n);
+    if (isEN()) {
+      if (rec && v === rec.en) return;
+      if (!CYR.test(v)) return;
+      const lead = v.match(/^\s*/)[0], trail = v.match(/\s*$/)[0];
+      const t0 = tr(v.trim()); if (t0 === v.trim()) return;
+      const en = lead + t0 + trail;
+      tnodes.set(n, { ru: v, en }); n.nodeValue = en;
+    } else if (rec && v === rec.en) { n.nodeValue = rec.ru; tnodes.delete(n); }
+  }
+  function procAttr(el, a) {
+    const v = el.getAttribute(a); if (v == null) return;
+    let rec = attrs.get(el); if (!rec) { rec = {}; attrs.set(el, rec); }
+    const r = rec[a];
+    if (isEN()) {
+      if (r && v === r.en) return;
+      if (!CYR.test(v)) return;
+      const en = tr(v); if (en === v) return;
+      rec[a] = { ru: v, en }; el.setAttribute(a, en);
+    } else if (r && v === r.en) { el.setAttribute(a, r.ru); delete rec[a]; }
+  }
+  function walk(root) {
+    if (root.nodeType === 3) return procText(root);
+    if (root.nodeType !== 1) return;
+    if (/^(SCRIPT|STYLE)$/.test(root.tagName)) return;
+    ATTRS.forEach(a => root.hasAttribute && root.hasAttribute(a) && procAttr(root, a));
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+    let n; while ((n = w.nextNode())) {
+      if (n.nodeType === 3) { if (!/^(SCRIPT|STYLE)$/.test(n.parentNode.tagName)) procText(n); }
+      else if (!/^(SCRIPT|STYLE)$/.test(n.tagName)) ATTRS.forEach(a => n.hasAttribute(a) && procAttr(n, a));
+    }
+  }
+  const obs = new MutationObserver(recs => {
+    for (const r of recs) {
+      if (r.type === 'characterData') procText(r.target);
+      else if (r.type === 'attributes') procAttr(r.target, r.attributeName);
+      else r.addedNodes.forEach(walk);
+    }
+  });
+  function translateAll() {
+    obs.disconnect();
+    walk(document.body);
+    // restore pass for RU: walk handles it through isEN()
+    obs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  }
+  window.translateAll = translateAll;
+
+  /* ---- при смене языка перерисовываем всё, что строится через t() ---- */
+  function rerenderDynamic() {
+    const act = id => { const e = document.getElementById(id); return !!(e && e.classList.contains('active')); };
+    try { if (typeof curMatch !== 'undefined' && curMatch) renderMatch(); } catch (_) {}
+    try { lastAdminSig = null; } catch (_) {}   // карточки модерации перерисуются на новом языке при следующем заходе
+    try { if (act('screen-admin')) { loadAdmin(); loadAdminUsers(); } } catch (_) {}
+    try { if (act('screen-testers')) loadTesterMenu(); } catch (_) {}
+    try { if (act('screen-board')) loadBoard(); } catch (_) {}
+  }
+  if (typeof setLang === 'function') {
+    const _sl = setLang;
+    setLang = function () { const r = _sl.apply(this, arguments); rerenderDynamic(); translateAll(); return r; };
+  }
+
+  /* ---- confirm / clipboard / hooks ---- */
+  const _confirm = window.confirm.bind(window);
+  window.confirm = m => _confirm(isEN() ? tr(String(m)) : m);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    const _w = navigator.clipboard.writeText.bind(navigator.clipboard);
+    navigator.clipboard.writeText = s => _w(isEN() ? tr(String(s)) : s);
+  }
+  if (typeof applyLang === 'function') {
+    const _al = applyLang;
+    applyLang = function () { const r = _al.apply(this, arguments); translateAll(); return r; };
+  }
+  translateAll();
+})();
+
 </script>
 </body>
 </html>
